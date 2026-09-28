@@ -1,31 +1,21 @@
 uart:
-    - id: U1
-      tx_pin: GPIO17
-      rx_pin: GPIO05
-      baud_rate: 19200
-      parity: EVEN
-      stop_bits: 1
-      
+  - id: U1
+    tx_pin: GPIO17
+    rx_pin: GPIO05
+    baud_rate: 19200
+    parity: EVEN
+    stop_bits: 1
+
 modbus:
-    - id: modbus1
-      uart_id: U1
-      
+  - id: modbus1
+    uart_id: U1
+
 modbus_controller:
-    - address: 0x1
-      id: modbus_user
-      update_interval: 10s
-      modbus_id: modbus1
-      
-binary_sensor:
-    # Non fonctionnel
-    # - platform: modbus_controller
-      # modbus_controller_id: modbus_user
-      # name: "Filtre"
-      # icon: mdi:air-filter
-      # register_type: holding
-      # address: 0x0082
-      # device_class: problem
-      
+  - address: 0x0001
+    id: modbus_user
+    update_interval: 10s
+    modbus_id: modbus1
+
 text_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
@@ -38,7 +28,7 @@ text_sensor:
     lambda: |-
       uint16_t value = modbus_controller::word_from_hex_str(x, 0);
       switch (value) {
-        case 0: return std::string("Etat initial");
+        case 0: return std::string("État initial");
         case 1: return std::string("ECS");
         case 2: return std::string("Air");
         case 3: return std::string("Standby");
@@ -63,6 +53,7 @@ text_sensor:
         default: return std::string("Unknown");
       }
       return x;
+
 sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
@@ -82,12 +73,12 @@ sensor:
     address: 0x0010
     value_type: U_DWORD
     filters:
-        - offset: 229413106
+      - offset: 229413106
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     name: "Température pièce principale"
-    device_class: "temperature"
-    state_class: "measurement"
+    device_class: temperature
+    state_class: measurement
     icon: mdi:thermometer
     register_type: holding
     address: 0x0078
@@ -96,127 +87,6 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k1a_lu
-    internal: yes
-    register_type: holding
-    address: 0x96
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k1b_lu
-    register_type: holding
-    address: 0x97
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k2_lu
-    register_type: holding
-    address: 0x98
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k3_lu
-    register_type: holding
-    address: 0x99
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k4_lu
-    register_type: holding
-    address: 0x9A
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k5_lu
-    register_type: holding
-    address: 0x9B
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k6_lu
-    register_type: holding
-    address: 0x9C
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k7_lu
-    register_type: holding
-    address: 0x9D
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k8_lu
-    register_type: holding
-    address: 0x9E
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: thermostat_k9_lu
-    register_type: holding
-    address: 0x9F
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: hp
-    register_type: holding
-    address: 0xA0
-    value_type: U_WORD
-    unit_of_measurement: "€"
-    accuracy_decimals: 4
-    filters:
-      - multiply: 0.001
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
-    id: hc
-    register_type: holding
-    address: 0xA1
-    value_type: U_WORD
-    unit_of_measurement: "€"
-    accuracy_decimals: 4
-    filters:
-      - multiply: 0.001
 
 number:
   - platform: modbus_controller
@@ -226,7 +96,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x96
+    address: 0x0096
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -239,7 +109,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x97
+    address: 0x0097
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -252,7 +122,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x98
+    address: 0x0098
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -265,7 +135,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x99
+    address: 0x0099
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -278,7 +148,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9A
+    address: 0x009A
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -291,7 +161,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9B
+    address: 0x009B
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -304,7 +174,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9C
+    address: 0x009C
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -317,7 +187,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9D
+    address: 0x009D
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -330,7 +200,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9E
+    address: 0x009E
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -343,7 +213,7 @@ number:
     icon: "mdi:thermostat"
     entity_category: config
     unit_of_measurement: "°C"
-    address: 0x9F
+    address: 0x009F
     value_type: U_WORD
     min_value: 0
     max_value: 31
@@ -356,7 +226,7 @@ number:
     entity_category: config
     mode: box
     unit_of_measurement: "€"
-    address: 0xA0
+    address: 0x00A0
     value_type: U_WORD
     min_value: 0.05
     max_value: 1
@@ -370,7 +240,7 @@ number:
     entity_category: config
     mode: box
     unit_of_measurement: "€"
-    address: 0xA1
+    address: 0x00A1
     value_type: U_WORD
     min_value: 0.05
     max_value: 1
@@ -386,7 +256,7 @@ number:
   - id: !remove ${nombre_thermostats | int < 7 and "thermostat_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "thermostat_k8"}
   - id: !remove ${nombre_thermostats | int < 9 and "thermostat_k9"}
-  
+
 select:
   - platform: modbus_controller
     modbus_controller_id: modbus_user

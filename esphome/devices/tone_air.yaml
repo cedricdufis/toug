@@ -2,13 +2,13 @@ esphome:
   name: "toug-${TOne}"
   comment: "${description}"
   build_path: "./.build/toug-${TOne}/"
-  friendly_name : "${name}"   
+  friendly_name : "${name}"
 
 packages:
   usb: !include usb.yaml
   modbus_air: !include modbus_air.yaml
   telecommande_air: !include telecommande_air.yaml
-  
+
 substitutions:
   K1a: K1a
   K1b: K1b # Normalement identique à K1a

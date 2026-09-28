@@ -647,3 +647,44 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 🛠️ **Contributions bienvenues !**
 *Forkez, étoilez, proposez vos idées – la communauté fera le reste.*
+
+## Améliorations de ce fork
+
+### Vitesse air cible rapporte mauvaise valeur
+
+Ajout du filtre à "Vitesse air cible".
+
+### Canal k1a rapporte si n'importe quelle bouche est ouvert
+
+Ajout du bitmask à "Canal ${K1a}".
+
+### Icones commandes différentes
+
+Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
+
+### Incompatibilités avec HA
+
+"Volume restant ECS" reçoit "state_class: total".
+"Coût chauffage" reçoit "state_class: total".
+"Coût rafraichissement" reçoit "state_class: total".
+"Tarif Kwh" n'a plus de "state_class".
+"Échangeur eau chaude" reçoit "unit_of_measurement: "bar"".
+"Coût eau chaude" reçoit "state_class: total".
+
+### Lecture de l'état du filtre pas à sa place
+
+"Filtre" passe de "telecommande_air.yaml" à "modbus_air.yaml".
+
+### Possible bug
+
+"Horloge télécommande" est maintenant un "U_DWORD".
+"Début vacances" est maintenant un "U_DWORD".
+"Fin vacances" est maintenant un "U_DWORD".
+"Test" est maintenant un "U_DWORD".
+
+### Divers
+
+"Température ECS" reçoit un S_WORD selon la documentation.
+"Consigne ECS" reçoit un S_WORD selon la documentation.
+"register_count" sont éliminés car non pris en compte.
+Plein de changement cosmétiques (réorganisation, élimination de code mort, espaces, ...)
