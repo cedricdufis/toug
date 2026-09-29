@@ -405,7 +405,7 @@ text_sensor:
     raw_encode: HEXBYTES
     # Lambda pour décoder la valeur numérique en description textuelle
     lambda: |-
-      uint16_t value = modbus::helpers::word_from_hex_str((x, 0);
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       switch (value) {
         case 0: return std::string("Initialisation");
         case 1: return std::string("Échangeur ECS");
@@ -425,7 +425,7 @@ text_sensor:
     raw_encode: HEXBYTES
     # Lambda pour décoder la valeur numérique en description textuelle
     lambda: |-
-      uint16_t value = modbus::helpers::word_from_hex_str((x, 0);
+      uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       if (value <= 2900) {
         return std::string("Bon");
       } else if (value <= 4394) {
