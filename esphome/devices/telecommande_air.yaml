@@ -1649,10 +1649,10 @@ select:
             then:
               # Stoppe tout timer existant
               - script.stop: auto_stop_test
-              # Si l'option choisie n'est PAS "Aucun", on relance le timer
+              # Si l'option choisie n'est PAS "Aucun" ni "Aéraulique", on relance le timer
               - if:
                   condition:
-                    lambda: 'return strcmp(id(mode_test).current_option().c_str(), "Aucun") != 0;'
+                    lambda: 'return strcmp(id(mode_test).current_option().c_str(), "Aucun") != 0 && strcmp(id(mode_test).current_option().c_str(), "Aéraulique") != 0;'
                   then:
                     - script.execute: auto_stop_test
                     - if:
