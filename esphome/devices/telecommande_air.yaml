@@ -104,7 +104,7 @@ script:
               return 
                 (int) id(canal_k1a).state  &&
                 id(etat_circuit_frigo).state == "Coil AIR" &&
-                (((int) id(test_id).state == 4) || ((int) id(test_id).state == 5));
+                (((int) id(id_test_actif).state == 4) || ((int) id(id_test_actif).state == 5));
           then: 
             - wait_until:
                 condition:
@@ -782,7 +782,6 @@ sensor:
 
       time_t epoch = mktime(&t);
       return (float)epoch;
-  # --- Registres de température et de courant (30-50) ---
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temperature_exterieure_thoa
@@ -1626,11 +1625,11 @@ select:
       "Aéraulique": 11
     write_lambda: |-
       // value = numéro du test choisi (optionsmap)
-      uint16_t test_id = (uint16_t) value;
+      uint16_t id_test_actif = (uint16_t) value;
       // Registre 21000 = ID du test
-      payload.push_back(test_id);
+      payload.push_back(id_test_actif);
       // Registre 21001 = 0 si test != 0, sinon 32753 pour arrêter
-      if (test_id == 0) {
+      if (id_test_actif == 0) {
         payload.push_back(32753);
       } else {
         payload.push_back(0);
