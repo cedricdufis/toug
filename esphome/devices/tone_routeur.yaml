@@ -24,10 +24,27 @@ i2c:
 ads1115:
   - address: 0x0048
 
+binary_sensor: 
+  - platform: gpio
+    name: "Résistance appoint"
+    id: resistance_appoint
+    entity_category: diagnostic
+    device_class: heat
+    pin:
+      number: GPIO${version == "V1.0" and "32" or "36"}
+      mode: INPUT
+      inverted: False
+    filters:
+      - delayed_on: 1s
+      - delayed_off: 1s
+  - id: !remove commande_k5
+  - id: !remove commande_k6
+
 sensor:
   - platform: ntc
     name: "Température bas"
     id: temperature_bas
+    entity_category: diagnostic
     sensor: resistance_bas
     calibration:
       - 1.3kOhm -> 78°C
@@ -36,12 +53,14 @@ sensor:
   - platform: resistance
     name: "Résistance bas"
     id: resistance_bas
+    entity_category: diagnostic
     sensor: adc_bas
     configuration: DOWNSTREAM
     resistor: 10kOhm
   - platform: ntc
     name: "Température haut"
     id: temperature_haut
+    entity_category: diagnostic
     sensor: resistance_haut
     calibration:
       - 1.3kOhm -> 78°C
@@ -50,11 +69,13 @@ sensor:
   - platform: resistance
     name: "Résistance haut"
     id: resistance_haut
+    entity_category: diagnostic
     sensor: adc_haut
     configuration: DOWNSTREAM
     resistor: 10kOhm
   - platform: ads1115
     id: adc_haut
+    entity_category: diagnostic
     multiplexer: 'A0_GND'
     gain: 4.096
     update_interval: 1s
@@ -64,6 +85,7 @@ sensor:
           send_every: 15
   - platform: ads1115
     id: adc_bas
+    entity_category: diagnostic
     multiplexer: 'A1_GND'
     gain: 4.096
     update_interval: 1s
@@ -99,21 +121,6 @@ sensor:
       - above: 60.5
         then:
           - switch.turn_on: force_60
-
-binary_sensor: 
-  - platform: gpio
-    name: "Résistance appoint"
-    id: resistance_appoint
-    device_class: heat
-    pin:
-      number: GPIO${version == "V1.0" and "32" or "36"}
-      mode: INPUT
-      inverted: False
-    filters:
-      - delayed_on: 1s
-      - delayed_off: 1s
-  - id: !remove commande_k5
-  - id: !remove commande_k6
 
 switch:
   - platform: gpio

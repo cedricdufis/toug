@@ -1,20 +1,22 @@
 sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
+    id: volume_restant_ecs
     name: "Volume restant ECS"
+    icon: mdi:hydraulic-oil-level
     device_class: volume
     state_class: total
-    icon: mdi:hydraulic-oil-level
     register_type: holding
     address: 0x006E
     value_type: U_WORD
     unit_of_measurement: "L"
   - platform: modbus_controller
     modbus_controller_id: modbus_user
+    id: temperature_ecs
     name: "Température ECS"
+    icon: mdi:water-thermometer-outline
     device_class: temperature
     state_class: measurement
-    icon: mdi:water-thermometer-outline
     register_type: holding
     address: 0x0070
     value_type: S_WORD
@@ -26,8 +28,10 @@ sensor:
 number:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
+    id: consigne_ecs
     name: "Consigne ECS"
-    icon: "mdi:thermostat"
+    icon: mdi:thermostat
+    entity_category: config
     register_type: holding
     address: 0x006F
     value_type: S_WORD
@@ -35,15 +39,15 @@ number:
     min_value: 7
     max_value: 61
     use_write_multiple: true
-    entity_category: config
     unit_of_measurement: "°C"
     multiply: 100
   
 select:
   - platform: modbus_controller
     modbus_controller_id: modbus_user
+    id: mode_ecs
     name: "Mode ECS"
-    icon: "mdi:water-boiler"
+    icon: mdi:water-boiler
     address: 0x0071
     value_type: U_WORD
     use_write_multiple: true

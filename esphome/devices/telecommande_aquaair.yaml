@@ -17,15 +17,18 @@ script:
 binary_sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: ecs_tout_electrique
     name: "ECS tout électrique"
+    icon: mdi:resistor
     register_type: holding
     address: 20272
-    icon: "mdi:resistor"
 
 sensor:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: echangeur_eau_chaude
     name: "Échangeur eau chaude"
+    icon: mdi:gauge
     device_class: pressure
     state_class: measurement
     register_type: holding
@@ -33,12 +36,13 @@ sensor:
     value_type: S_WORD
     unit_of_measurement: "bar"
     accuracy_decimals: 2
-    icon: "mdi:gauge" # Icône pour la pression
     filters:
       - multiply: 0.01
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: sonde_ecs_haut
     name: "Sonde ECS haut"
+    icon: mdi:coolant-temperature
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -46,12 +50,13 @@ sensor:
     value_type: S_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 2
-    icon: "mdi:coolant-temperature" # Température d'eau chaude sanitaire (ECS)
     filters:
       - multiply: 0.01
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: sonde_ecs_bas
     name: "Sonde ECS bas"
+    icon: mdi:coolant-temperature
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -59,12 +64,13 @@ sensor:
     value_type: S_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 2
-    icon: "mdi:coolant-temperature"
     filters:
       - multiply: 0.01
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: ecs_ligne_liquide_th4
     name: "ECS ligne liquide Th4"
+    icon: mdi:thermometer
     device_class: temperature
     state_class: measurement
     register_type: holding
@@ -72,42 +78,47 @@ sensor:
     value_type: S_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 2
-    icon: "mdi:thermometer" # Température échangeur air # Température de la ligne liquide
     filters:
       - multiply: 0.01
-  # --- Registres ECS et Divers (6000+) ---
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: pourcentage_ecs
     name: "Pourcentage ECS"
-    device_class: battery # Utilisation de la classe "battery" pour un pourcentage
+    icon: mdi:water-boiler
+    device_class: battery
     state_class: measurement
     register_type: holding
     address: 6080
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    icon: "mdi:water-boiler" # Niveau de ballon d'eau chaude
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: conso_eau_chaude
     name: "Conso eau chaude"
+    icon: mdi:lightning-bolt
     register_type: holding
     address: 21672
     value_type: U_DWORD
     device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
+    state_class: total_increasing
     unit_of_measurement: "kWh"
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: conso_eau_chaude_appoint
     name: "Conso eau chaude appoint"
+    icon: mdi:lightning-bolt
     register_type: holding
     address: 21674
     value_type: U_DWORD
     device_class: energy
-    state_class: total_increasing  # Si c'est un compteur cumulatif
+    state_class: total_increasing
     unit_of_measurement: "kWh"
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
+    id: cout_eau_chaude
     name: "Coût eau chaude"
+    icon: mdi:currency-eur
     register_type: holding
     address: 21682
     value_type: U_DWORD
@@ -119,15 +130,15 @@ sensor:
       - multiply: 0.001
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: consigne_ecs_telecommande_lue
+    id: consigne_ecs_telecommande
     name: "Consigne ECS télécommande"
+    icon: mdi:thermostat
     device_class: temperature
     register_type: holding
     address: 31002
     value_type: U_WORD
     unit_of_measurement: "°C"
     accuracy_decimals: 0
-    icon: "mdi:thermostat"
 
 number:
   - id: !extend registre_9_telecommande
@@ -139,6 +150,8 @@ number:
     modbus_controller_id: modbus_telecommande
     id: composition_foyer
     name: "Composition foyer"
+    icon: mdi:account-group
+    entity_category: config
     register_type: holding
     address: 31007
     value_type: U_WORD
@@ -146,8 +159,6 @@ number:
     min_value: 2
     max_value: 5
     use_write_multiple: true
-    entity_category: config
-    icon: "mdi:account-group"
     lambda: return x + 2; 
     write_lambda: return x - 2;  
 
@@ -155,7 +166,7 @@ select:
   - platform: template
     name: "Mode ECS Télécommande"
     id: mode_ecs_telecommande
-    icon: "mdi:water-boiler"
+    icon: mdi:water-boiler
     options:
       - "Off"
       - "On"
@@ -238,8 +249,8 @@ select:
 
 output:
   - platform: modbus_controller
-    id: reset_anode
     modbus_controller_id: modbus_telecommande
+    id: reset_anode
     address: 20279
     register_type: holding
     value_type: U_WORD
@@ -252,7 +263,7 @@ output:
 button:
   - platform: template
     name: "Reset Anode"
-    icon: "mdi:history"
+    icon: mdi:history
     entity_category: config
     on_press:
       - output.turn_on:

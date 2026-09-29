@@ -25,6 +25,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K1a}"
     id: commande_k1a
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO39
@@ -35,6 +36,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K2}"
     id: commande_k2
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO35
@@ -45,6 +47,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K3}"
     id: commande_k3
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO${version == "V1.0" and "36" or "32"}
@@ -55,6 +58,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K4}"
     id: commande_k4
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO12
@@ -65,6 +69,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K5}"
     id: commande_k5
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO33
@@ -75,6 +80,7 @@ binary_sensor:
   - platform: gpio
     name: "Commande ${K6}"
     id: commande_k6
+    entity_category: diagnostic
     device_class: opening
     pin:
       number: GPIO${version == "V1.0" and "32" or "36"}
