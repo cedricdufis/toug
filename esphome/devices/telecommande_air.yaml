@@ -2,7 +2,7 @@ esphome:
   on_boot:
     - then:
       - select.set:
-          id: test_mode
+          id: mode_test
           option: "Aucun"
 
 api:
@@ -85,7 +85,7 @@ script:
     then:
       - delay: 1h
       - select.set:
-          id: test_mode
+          id: mode_test
           option: "Aucun"
   - id: consigne_test
     mode: restart
@@ -129,14 +129,14 @@ script:
                       call2.perform();
                 else:
                   - select.set:
-                      id: test_mode
+                      id: mode_test
                       option: "Aucun"
                   - logger.log:
                       format: "TEST : Timeout activation -> Annulation"
                       level: ERROR
           else:
             - select.set:
-                id: test_mode
+                id: mode_test
                 option: "Aucun"
             - logger.log:
                 format: "TEST : Timeout test sélectionné -> Annulation"
@@ -1653,7 +1653,7 @@ select:
               # Si l'option choisie n'est PAS "Aucun", on relance le timer
               - if:
                   condition:
-                    lambda: 'return strcmp(id(test_mode).current_option().c_str(), "Aucun") != 0;'
+                    lambda: 'return strcmp(id(mode_test).current_option().c_str(), "Aucun") != 0;'
                   then:
                     - script.execute: auto_stop_test
                     - if:

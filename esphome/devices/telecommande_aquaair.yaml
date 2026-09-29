@@ -234,7 +234,7 @@ select:
         
         //Mise à jour de la valeur du select
         id(update_mode_air_telecommande).execute();
-  - id: !extend test_mode
+  - id: !extend mode_test
     optionsmap:
       "Aucun": 0
       "Chauffage": 4
