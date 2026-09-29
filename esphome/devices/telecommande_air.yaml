@@ -45,10 +45,11 @@ api:
           }
           
           // --- 4) Création de la commande Modbus ---
-          id(modbus_telecommande).send_write_multiple_command(
-            start_address,
-            regs.size(),
-            regs
+          auto cmd = modbus_controller::ModbusCommandItem::create_write_multiple_command(
+              modbus_telecommande,
+              start_address,
+              regs.size(),
+              regs
           );
           
           // --- 5) Envoi ---
