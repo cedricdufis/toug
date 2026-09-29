@@ -397,8 +397,8 @@ text_sensor:
     raw_encode: HEXBYTES
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: etat_circuit_frigo
-    name: "État du circuit frigo"
+    id: etat_circuit_frigo_telecommande
+    name: "État du circuit frigo télécommande"
     icon: mdi:valve
     register_type: holding
     address: 6021
@@ -407,13 +407,13 @@ text_sensor:
     lambda: |-
       uint16_t value = modbus::helpers::word_from_hex_str(x, 0);
       switch (value) {
-        case 0: return std::string("Initialisation");
-        case 1: return std::string("Échangeur ECS");
-        case 2: return std::string("Coil AIR");
-        case 3: return std::string("Position Standby");
-        case 4: return std::string("Position Sécurité");
-        case 5: return std::string("Wait");
-        default: return std::string("Inconnu");
+        case 0: return std::string("État initial");
+        case 1: return std::string("ECS");
+        case 2: return std::string("Air");
+        case 3: return std::string("Standby");
+        case 4: return std::string("Standby sécurité");
+        case 5: return std::string("En cours de modification");
+        default: return std::string("Unknown");
       }
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -433,7 +433,7 @@ text_sensor:
       } else if (value > 4394) {
         return std::string("Mauvais");
       }
-      return std::string("Inconnu");
+      return std::string("Unknown");
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: defauts
@@ -1674,7 +1674,7 @@ select:
       "Dollars": 1
   - platform: template
     id: mode_air_telecommande
-    name: "Mode Air Télécommande"
+    name: "Mode air télécommande"
     icon: mdi:air-conditioner
     entity_category: config
     options:

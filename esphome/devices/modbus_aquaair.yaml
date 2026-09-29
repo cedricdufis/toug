@@ -48,6 +48,7 @@ select:
     id: mode_ecs
     name: "Mode ECS"
     icon: mdi:water-boiler
+    entity_category: config
     address: 0x0071
     value_type: U_WORD
     use_write_multiple: true
