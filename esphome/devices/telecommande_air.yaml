@@ -112,8 +112,8 @@ script:
                     int nb_c = (int) id(nb_canaux).state;
                     int target_value = pow(2, nb_c + 1) - 1;
                     return (int) id(canaux_actifs).state > 0 &&
-                           (int) id(registre_30).state >= target_value &&
-                           (int) id(registre_35).state >= target_value;
+                           (int) id(etat_30).state >= target_value &&
+                           (int) id(etat_35).state >= target_value;
                 timeout: 300s
             - if:
                 condition:
