@@ -124,7 +124,7 @@ script:
                       auto call = id(consigne_compresseur_test).make_call();
                       call.set_value(83);
                       call.perform();
-                      auto call2 = id(consigne_ventilateur_test).make_call();
+                      auto call2 = id(consigne_ventilateur_ui_test).make_call();
                       call2.set_value(600);
                       call2.perform();
                 else:
