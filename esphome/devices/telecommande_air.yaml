@@ -1676,7 +1676,6 @@ select:
     id: mode_air_telecommande
     name: "Mode air télécommande"
     icon: mdi:air-conditioner
-    entity_category: config
     options:
       - "Off"
       - "Confort Chauffage"
