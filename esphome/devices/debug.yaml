@@ -100,15 +100,6 @@ sensor:
     address: 137
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: etat_142
-    name: "État 142"
-    icon: mdi:ufo
-    entity_category: diagnostic
-    value_type: U_WORD
-    register_type: holding
-    address: 142
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
     id: etat_220
     name: "État 220"
     icon: mdi:ufo

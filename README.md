@@ -675,6 +675,10 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 
 "Filtre" passe de "telecommande_air.yaml" à "modbus_air.yaml".
 
+### Enlever valeur debug dupliquées
+
+État 142 n'est autre que "Canaux actifs".
+
 ### Possible bug
 
 "Horloge télécommande" est maintenant un "U_DWORD".
