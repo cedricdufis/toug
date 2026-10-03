@@ -664,11 +664,11 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 
 ### Incompatibilités avec HA
 
-"Volume restant ECS" reçoit "state_class: total".
-"Coût chauffage" reçoit "state_class: total".
-"Coût rafraichissement" reçoit "state_class: total".
-"Tarif Kwh" n'a plus de "state_class".
-"Échangeur eau chaude" reçoit "unit_of_measurement: "bar"".
+"Volume restant ECS" reçoit "state_class: total".  
+"Coût chauffage" reçoit "state_class: total".  
+"Coût rafraichissement" reçoit "state_class: total".  
+"Tarif Kwh" n'a plus de "state_class".  
+"Échangeur eau chaude" reçoit "unit_of_measurement: "bar"".  
 "Coût eau chaude" reçoit "state_class: total".
 
 ### Lecture de l'état du filtre pas à sa place
@@ -681,14 +681,52 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 
 ### Possible bug
 
-"Horloge télécommande" est maintenant un "U_DWORD".
-"Début vacances" est maintenant un "U_DWORD".
-"Fin vacances" est maintenant un "U_DWORD".
+"Horloge télécommande" est maintenant un "U_DWORD".  
+"Début vacances" est maintenant un "U_DWORD".  
+"Fin vacances" est maintenant un "U_DWORD".  
 "Test" est maintenant un "U_DWORD".
 
 ### Divers
 
-"Température ECS" reçoit un S_WORD selon la documentation.
-"Consigne ECS" reçoit un S_WORD selon la documentation.
-"register_count" sont éliminés car non pris en compte.
-Plein de changement cosmétiques (réorganisation, élimination de code mort, espaces, ...)
+"Température ECS" reçoit un S_WORD selon la documentation.  
+"Consigne ECS" reçoit un S_WORD selon la documentation.  
+"register_count" sont éliminés car non pris en compte.  
+Plein de changement cosmétiques (réorganisation, élimination de code mort, espaces, ...).
+
+### Note des "États"
+
+État 6 (0):
+
+État 29 (0): CLairement l'état de commande d'ouverture de bouche, 1 bit par bouche (k1a et k1b sont les 2 premiers). On commence par LSB (e.g.: lorsque seule la pièce principale est ouvete le code est 0000 0011).
+
+État 30 (0): Semble être une sorte de retour de l'état des bouches. Idem a 35.
+
+État 35 (0): Semble être une sorte de retour de l'état des bouches. Idem a 30.
+
+État 47 (65486):
+
+État 67 (0):
+
+État 68 (0):
+
+État 69 (32768):
+
+État 101 (0):
+
+État 102 (0): Semble être en relation étroite avec le débit d'air.
+
+État 137 (0): Semble être un compteur qui compte à partir du moment ou s'active le chauffage ou la clim (pas le mode mais l'activation elle-même en fonction de la température). Compte chaque seconde.
+
+État 220 (65535): Semble être un compteur qui compte à partir de chaque changement de l'état du mode air. Compte de 0 a 65535 chaque seconde, soit un peu plus de 18 heures.
+
+État 362 (-): Semble être un compteur, augmente d'un toutes les 11h30 plus ou moins (presque 700 minutes, 41800 secondes).
+
+Changement ECS:
+
+* 6: Normalement à 0, oscille entre 0, 1 et 2.  
+* 47: Normalement à 65486, changements aléatoires.  
+* 67: Normalement à 0, change à 16 et 1040 (1024+16), à étudier.
+
+Changement Air, Chauffage:
+
+* 

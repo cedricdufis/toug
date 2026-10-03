@@ -1,16 +1,16 @@
 substitutions:
   ## Personnalisation
-  
+
   # 1/ Définir le T.one connecté à la TOUG (T.One AIR  ou T.One AquaAIR)
   TOne: #air ou aquaair
-    
+
   # 2/ Indiquer le nombre de thermostats
   nombre_thermostats: #nombre entre 1 et 9
   
   # 3/ (optionnel) Remplacer le nom et la description par défaut si besoin (décommenter)
   # name: Mon Nom Perso # (friendly_name)
   # description: Mettre ici la description de remplacement
-  
+
   # 4/ (optionnel) Remplacer le nom des cannaux/bouches/thermostats (par exemple par pièce) (décommenter)
   # K1a: Pièce 1
   # K1b: Pièce 1 bis # Normalement identique à K1a
@@ -22,12 +22,11 @@ substitutions:
   # K7: Pièce 7
   # K8: Pièce 8
   # K9: Pièce 9
-  
+
   #5/ Indiquer la version de la TOUG (voir PCB)
   version: #V1.0 (2025) ou V2.0 (2026)
-  
+
   # 6/ Voir ci-dessous
-  
 
 ## Customization area
 ##### My customization - Start #####
@@ -49,4 +48,3 @@ packages:
       # - esphome/toug_aquaair_routeur_wifi.yaml  #T.One AquaAIR avec connexion ethernet et routeur solaire
       # - esphome/toug_aquaair_routeur_eth.yaml   #T.One AquaAIR avec connexion wifi et routeur solaire
       # - esphome/devices/debug.yaml              #Pour aider au debug
-
