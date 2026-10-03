@@ -1032,7 +1032,8 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "Pa"
     accuracy_decimals: 0
-  - platform: modbus_controller
+  - &temperature_commune
+    platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temperature_k1a
     name: "Température ${K1a}"
@@ -1046,118 +1047,38 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01 
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k1b
     name: "Température ${K1b}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 191
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01 
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k2
     name: "Température ${K2}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 192
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k3
     name: "Température ${K3}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 193
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k4
     name: "Température ${K4}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 194
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k5
     name: "Température ${K5}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 195
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k6
     name: "Température ${K6}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 196
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k7
     name: "Température ${K7}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 197
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *temperature_commune
     id: temperature_k8
     name: "Température ${K8}"
-    icon: mdi:thermometer
-    device_class: temperature
-    state_class: measurement
-    register_type: holding
     address: 198
-    value_type: S_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.01
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_ventilateur_on
