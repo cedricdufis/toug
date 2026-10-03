@@ -267,7 +267,8 @@ binary_sensor:
     entity_category: diagnostic
     register_type: holding 
     address: 131
-  - platform: modbus_controller
+  - &canal
+    platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: canal_k1a
     name: Canal ${K1a}
@@ -276,78 +277,38 @@ binary_sensor:
     register_type: holding
     address: 5029
     bitmask: 0x1
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k1b
     name: Canal ${K1b}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
     bitmask: 0x2
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k2
     name: Canal ${K2}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
     bitmask: 0x4
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k3
     name: Canal ${K3}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
     bitmask: 0x8
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k4
     name: Canal ${K4}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
     bitmask: 0x10
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k5
     name: Canal ${K5}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
     bitmask: 0x20
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *canal
     id: canal_k6
     name: Canal ${K6}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
-    bitmask: 0x40  
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+    bitmask: 0x40
+  - <<: *canal
     id: canal_k7
     name: Canal ${K7}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
-    bitmask: 0x80 
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+    bitmask: 0x80
+  - <<: *canal
     id: canal_k8
     name: Canal ${K8}
-    icon: mdi:valve
-    device_class: opening
-    register_type: holding
-    address: 5029
-    bitmask: 0x100 
+    bitmask: 0x100
 # Supprime les canaux non utilisées (Solution pour le 'null')
   - id: !remove ${nombre_thermostats | int < 2 and "canal_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "canal_k3"}
@@ -1322,7 +1283,8 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-  - platform: modbus_controller
+  - &consigne_zone
+    platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_k1a
     name: "Consigne zone ${K1a}"
@@ -1336,118 +1298,38 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k1b
     name: "Consigne zone ${K1b}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31101
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k2
     name: "Consigne zone ${K2}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31102
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k3
     name: "Consigne zone ${K3}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31103
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k4
     name: "Consigne zone ${K4}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31104
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k5
     name: "Consigne zone ${K5}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31105
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k6
     name: "Consigne zone ${K6}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31106
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k7
     name: "Consigne zone ${K7}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31107
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+  - <<: *consigne_zone
     id: consigne_k8
     name: "Consigne zone ${K8}"
-    icon: mdi:thermostat
-    entity_category: diagnostic
-    device_class: temperature
-    register_type: holding
     address: 31108
-    value_type: U_WORD
-    unit_of_measurement: "°C"
-    accuracy_decimals: 2
-    filters:
-      - multiply: 0.01
 # Supprime les consignes non utilisées 
   - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}

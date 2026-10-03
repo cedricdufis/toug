@@ -94,7 +94,8 @@ sensor:
       - multiply: 0.01
 
 number:
-  - platform: modbus_controller
+  - &thermostat
+    platform: modbus_controller
     modbus_controller_id: modbus_user
     id: thermostat_k1a
     name: "Thermostat ${K1a}"
@@ -106,114 +107,42 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k1b
     name: "Thermostat ${K1b}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x0097
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k2
     name: "Thermostat ${K2}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x0098
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k3
     name: "Thermostat ${K3}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x0099
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k4
     name: "Thermostat ${K4}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009A
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k5
     name: "Thermostat ${K5}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009B
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k6
     name: "Thermostat ${K6}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009C
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k7
     name: "Thermostat ${K7}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009D
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k8
     name: "Thermostat ${K8}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009E
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
-  - platform: modbus_controller
-    modbus_controller_id: modbus_user
+  - <<: *thermostat
     id: thermostat_k9
     name: "Thermostat ${K9}"
-    icon: mdi:thermostat
-    unit_of_measurement: "°C"
     address: 0x009F
-    value_type: U_WORD
-    min_value: 0
-    max_value: 31
-    use_write_multiple: true
-    multiply: 100
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: tarif_hp
