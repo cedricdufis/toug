@@ -1348,7 +1348,6 @@ number:
     address: 64
     value_type: U_WORD
     unit_of_measurement: "m³/h"
-    accuracy_decimals: 0
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: vitesse_air_cible
@@ -1359,7 +1358,6 @@ number:
     address: 152
     value_type: U_WORD
     unit_of_measurement: "m/s"
-    accuracy_decimals: 1
     filters:
       - multiply: 0.1
   - platform: modbus_controller
