@@ -88,6 +88,12 @@ Ces registres fournissent des informations sur l'état actuel, les mesures de so
 | 31107         | 0x79EA        | Consigne zone K7                      | °C    | Valeur / 100     | 16 bits | Consigne de température pour la zone 7.                                             |
 | 31108         | 0x79EB        | Consigne zone K8                      | °C    | Valeur / 100     | 16 bits | Consigne de température pour la zone 8.                                             |
 | 31109         | 0x79EC        | Consigne zone K9                      | °C    | Valeur / 100     | 16 bits | Consigne de température pour la zone 9.                                             |
+| XXXXX         | 0xXXXX        | Condensation / Évaporation            | °C    | -                | -       | À découvrir.                                                                        |
+| XXXXX         | 0xXXXX        | Désurchauffe                          | °C    | -                | -       | À découvrir.                                                                        |
+| XXXXX         | 0xXXXX        | Version IHM                           | -     | -                | -       | À découvrir.                                                                        |
+| XXXXX         | 0xXXXX        | État ventilateur                      | -     | -                | -       | À découvrir.                                                                        |
+| XXXXX         | 0xXXXX        | Débit air maximal                     | m³/h  | -                | -       | À découvrir.                                                                        |
+| XXXXX         | 0xXXXX        | Débit air intermédiaire               | m³/h  | -                | -       | À découvrir.                                                                        |
 
 ***
 
@@ -120,6 +126,10 @@ Ces registres sont utilisés pour contrôler le comportement de la pompe à chal
 | 31013         | 0x798D        | Tarif Kwh                      | €     | Valeur / 1000    | 16 bits | Prix du kWh.                                                                                                                  |
 | 31015         | 0x798F        | Devise                         | -     | -                | BOOL    | 0: Euros, 1: Dollars.                                                                                                         |
 | 31017         | 0x7991        | Commande de Reset Consommation | -     | -                | 16 bits | Écrire 0x0001, le registre 31017 doit être écrit avec la valeur 1 (0x0001) pour déclencher la réinitialisation des compteurs. |
+| XXXXX         | 0xXXXX        | Reset filtre                   | -     | -                | -       | À découvrir.                                                                                                                  |
+| XXXXX         | 0xXXXX        | Langue                         | -     | -                | -       | À découvrir.                                                                                                                  |
+| XXXXX         | 0xXXXX        | Pression statique débit max    | Pa    | -                | -       | À découvrir.                                                                                                                  |
+| XXXXX         | 0xXXXX        | Pression statique débit mini   | Pa    | -                | -       | À découvrir.                                                                                                                  |
 
 ### Options de mode air disponibles
 
