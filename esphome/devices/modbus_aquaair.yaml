@@ -1,4 +1,5 @@
 sensor:
+# Registre 0x0006E
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: volume_restant_ecs
@@ -10,6 +11,7 @@ sensor:
     address: 0x006E
     value_type: U_WORD
     unit_of_measurement: "L"
+# Registre 0x0070
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: temperature_ecs
@@ -26,6 +28,7 @@ sensor:
       - multiply: 0.01
 
 number:
+# Registre 0x006F
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: consigne_ecs
@@ -43,6 +46,7 @@ number:
     multiply: 100
   
 select:
+# Registre 0x0071
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: mode_ecs

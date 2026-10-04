@@ -17,6 +17,7 @@ modbus_controller:
     modbus_id: modbus1
 
 text_sensor:
+# Registre 0x0064
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: etat_circuit_frigo
@@ -38,6 +39,7 @@ text_sensor:
         default: return std::string("Unknown");
       }
       return x;
+  # Registre 0x0082
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: changement_filtre
@@ -57,6 +59,7 @@ text_sensor:
       return x;
 
 sensor:
+# Registre 0x0001
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: version_logiciel_regulateur
@@ -66,6 +69,7 @@ sensor:
     register_type: holding
     address: 0x0001
     value_type: U_WORD
+  # Registre 0x0010
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: date_et_heure
@@ -78,6 +82,7 @@ sensor:
     value_type: U_DWORD
     filters:
       - offset: 229413106
+  # Registre 0x0078
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: temperature_piece_principale
@@ -94,6 +99,7 @@ sensor:
       - multiply: 0.01
 
 number:
+# Registre 0x0096
   - &thermostat
     platform: modbus_controller
     modbus_controller_id: modbus_user
@@ -107,42 +113,52 @@ number:
     max_value: 31
     use_write_multiple: true
     multiply: 100
+# Registre 0x0097
   - <<: *thermostat
     id: thermostat_k1b
     name: "Thermostat ${K1b}"
     address: 0x0097
+# Registre 0x0098
   - <<: *thermostat
     id: thermostat_k2
     name: "Thermostat ${K2}"
     address: 0x0098
+  # Registre 0x0099
   - <<: *thermostat
     id: thermostat_k3
     name: "Thermostat ${K3}"
     address: 0x0099
+  # Registre 0x009A
   - <<: *thermostat
     id: thermostat_k4
     name: "Thermostat ${K4}"
     address: 0x009A
+  # Registre 0x009B
   - <<: *thermostat
     id: thermostat_k5
     name: "Thermostat ${K5}"
     address: 0x009B
+  # Registre 0x009C
   - <<: *thermostat
     id: thermostat_k6
     name: "Thermostat ${K6}"
     address: 0x009C
+  # Registre 0x009D
   - <<: *thermostat
     id: thermostat_k7
     name: "Thermostat ${K7}"
     address: 0x009D
+  # Registre 0x009E
   - <<: *thermostat
     id: thermostat_k8
     name: "Thermostat ${K8}"
     address: 0x009E
+  # Registre 0x009F
   - <<: *thermostat
     id: thermostat_k9
     name: "Thermostat ${K9}"
     address: 0x009F
+  # Registre 0x00A0
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: tarif_hp
@@ -158,6 +174,7 @@ number:
     use_write_multiple: true
     multiply: 1000
     step: 0.001
+# Registre 0x00A1
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: tarif_hc
@@ -184,6 +201,7 @@ number:
   - id: !remove ${nombre_thermostats | int < 9 and "thermostat_k9"}
 
 select:
+# Registre 0x007A
   - platform: modbus_controller
     modbus_controller_id: modbus_user
     id: mode_air

@@ -15,6 +15,7 @@ script:
           ESP_LOGD("Mode ECS télécommande", "Publish mode ECS %s", mode_str.c_str());
 
 binary_sensor:
+# Registre 20272
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: ecs_tout_electrique
@@ -24,6 +25,7 @@ binary_sensor:
     address: 20272
 
 sensor:
+# Registre 106
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: echangeur_eau_chaude
@@ -38,6 +40,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+# Registre 111
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: sonde_ecs_haut
@@ -52,6 +55,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+# Registre 112
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: sonde_ecs_bas
@@ -66,6 +70,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+# Registre 113
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: ecs_ligne_liquide_th4
@@ -80,6 +85,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+# Registre 6080
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: pourcentage_ecs
@@ -92,6 +98,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
+  # Registre 21672
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: conso_eau_chaude
@@ -103,6 +110,7 @@ sensor:
     device_class: energy
     state_class: total_increasing
     unit_of_measurement: "kWh"
+  # Registre 21674
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: conso_eau_chaude_appoint
@@ -114,6 +122,7 @@ sensor:
     device_class: energy
     state_class: total_increasing
     unit_of_measurement: "kWh"
+  # Registre 21682
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: cout_eau_chaude
@@ -128,6 +137,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
+  # Registre 31002
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ecs_telecommande
@@ -146,6 +156,7 @@ number:
       - lambda: |-
           id(update_mode_ecs_telecommande).execute();
           id(update_mode_air_telecommande).execute();
+# Registre 31007
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: definir_composition_foyer
@@ -248,6 +259,7 @@ select:
       "Aéraulique": 11
 
 output:
+# Registre 20279
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: reset_anode
