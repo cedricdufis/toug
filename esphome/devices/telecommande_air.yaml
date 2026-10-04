@@ -1356,9 +1356,9 @@ number:
     min_value: 0 #->100
     max_value: 1200
     write_lambda: |-
-      // ici x = valeur demandée (en Hz, avant multiplicateur)
+      // ici x = valeur demandée (en m³/h, avant multiplicateur)
       if (x > 0 && x < 100) {
-        ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
+        ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
         return 0;   // renvoit une valeur valide
       }
       return x;  // valeur acceptée
