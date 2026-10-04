@@ -309,6 +309,10 @@ binary_sensor:
     id: canal_k8
     name: Canal ${K8}
     bitmask: 0x100
+  - <<: *canal
+    id: canal_k9
+    name: Canal ${K9}
+    bitmask: 0x200
 # Supprime les canaux non utilisées (Solution pour le 'null')
   - id: !remove ${nombre_thermostats | int < 2 and "canal_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "canal_k3"}
@@ -1040,6 +1044,10 @@ sensor:
     id: temperature_k8
     name: "Température ${K8}"
     address: 198
+  - <<: *temperature_commune
+    id: temperature_k9
+    name: "Température ${K9}"
+    address: 199
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_ventilateur_on
@@ -1330,6 +1338,10 @@ sensor:
     id: consigne_k8
     name: "Consigne zone ${K8}"
     address: 31108
+  - <<: *consigne_zone
+    id: consigne_k9
+    name: "Consigne zone ${K9}"
+    address: 31109
 # Supprime les consignes non utilisées 
   - id: !remove ${nombre_thermostats | int < 2 and "consigne_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "consigne_k3"}
