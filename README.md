@@ -693,20 +693,8 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 "Consigne ECS" reçoit un S_WORD selon la documentation.  
 "register_count" sont éliminés car non pris en compte.  
 Plein de changement cosmétiques (réorganisation, élimination de code mort, espaces, ...).
-
-Les informations suivantes sont présentes sur la télécommande mais pas ici:
-
-* Réduit mode ECO  
-* Condensation / Evaporation  
-* Etat appoint eau chaude  
-* Reset filtre  
-* Langue  
-* Version IHM  
-* Etat ventilateur  
-* Débit air maximal  
-* Pression statique débit max  
-* Débit air intermédiaire  
-* Pressions statique debit mini
+64 et 152 sont implémentés en lecture seule, lecture/écriture dans la doc.
+Il manque 31012.
 
 ### À propos des "États"
 
