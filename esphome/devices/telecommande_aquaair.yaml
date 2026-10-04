@@ -221,10 +221,10 @@ select:
         uint16_t current_reg = (uint16_t)id(registre_9_telecommande).state;
         
         // 2. Isoler le Mode ECS (MSB)
-        uint16_t ecs_mode_msb = current_reg & 0xFF00; 
+        uint16_t ecs_mode_msb = current_reg & 0xFF00;
         
         // 3. Assemblage : [ECS (MSB)] | [Nouveau Mode AIR (LSB)]
-        uint16_t new_value = ecs_mode_msb | new_air_mode; 
+        uint16_t new_value = ecs_mode_msb | new_air_mode;
 
         // 4. Écrire la nouvelle valeur complète dans le registre 9
         // Utilisation du service Modbus pour écrire un registre

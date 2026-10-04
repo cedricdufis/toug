@@ -685,6 +685,7 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 "Début vacances" est maintenant un "U_DWORD".  
 "Fin vacances" est maintenant un "U_DWORD".  
 "Test" est maintenant un "U_DWORD".
+"Canaux actifs" ne semble pas représenter l'état d'activation des canaux
 
 ### Divers
 
@@ -693,25 +694,39 @@ Changement icone à "Commande ${K1a}" et "Commande ${K1b}".
 "register_count" sont éliminés car non pris en compte.  
 Plein de changement cosmétiques (réorganisation, élimination de code mort, espaces, ...).
 
-### Note des "États"
+Les informations suivantes sont présentes sur la télécommande mais pas ici:
 
-État 6 (0):
+* Réduit mode ECO  
+* Condensation / Evaporation  
+* Etat appoint eau chaude  
+* Reset filtre  
+* Langue  
+* Version IHM  
+* Etat ventilateur  
+* Débit air maximal  
+* Pression statique débit max  
+* Débit air intermédiaire  
+* Pressions statique debit mini
 
-État 29 (0): CLairement l'état de commande d'ouverture de bouche, 1 bit par bouche (k1a et k1b sont les 2 premiers). On commence par LSB (e.g.: lorsque seule la pièce principale est ouvete le code est 0000 0011).
+### À propos des "États"
 
-État 30 (0): Semble être une sorte de retour de l'état des bouches. Idem a 35.
+État 6 (0): Varie entre 0, 1 et 2 lorsque des canaux semblent actifs.
 
-État 35 (0): Semble être une sorte de retour de l'état des bouches. Idem a 30.
+État 29 (0): CLairement l'état de commande d'ouverture des canaux, 1 bit par canal (k1a et k1b sont les 2 premiers). On commence par LSB (e.g.: lorsque seule la pièce principale est ouvete le code est 0000 0011).
 
-État 47 (65486):
+État 30 (0): Semble être une sorte de retour de l'état des canaux. Idem a 35.
 
-État 67 (0):
+État 35 (0): Semble être une sorte de retour de l'état des canaux. Idem a 30.
 
-État 68 (0):
+État 47 (65486): Corrélation avec 67. Change lorsque 67 est différent de sa valeur par défaut et le T-One en mode ECS. Correspond à 6 ayant la valeur 1 en nmode ECS et en mode air.
 
-État 69 (32768):
+État 67 (0): Corrélation avec 47. Change de valeur lorsqu'il semble y avoir de l'activité thermodynamique. Correspond à 6 ayant la valeur 1 en mode ECS et 1 ou 2 en mode air.
 
-État 101 (0):
+État 68 (0): Se met à 1 lorsque le ventilateur tourne.
+
+État 69 (32768): Change lorsque les canaux sont ouverts en mode chauffage ou clim, pas en test aéraulique.
+
+État 101 (0): Semble être en relation étroite avec le débit d'air.
 
 État 102 (0): Semble être en relation étroite avec le débit d'air.
 
@@ -720,13 +735,3 @@ Plein de changement cosmétiques (réorganisation, élimination de code mort, es
 État 220 (65535): Semble être un compteur qui compte à partir de chaque changement de l'état du mode air. Compte de 0 a 65535 chaque seconde, soit un peu plus de 18 heures.
 
 État 362 (-): Semble être un compteur, augmente d'un toutes les 11h30 plus ou moins (presque 700 minutes, 41800 secondes).
-
-Changement ECS:
-
-* 6: Normalement à 0, oscille entre 0, 1 et 2.  
-* 47: Normalement à 65486, changements aléatoires.  
-* 67: Normalement à 0, change à 16 et 1040 (1024+16), à étudier.
-
-Changement Air, Chauffage:
-
-* 

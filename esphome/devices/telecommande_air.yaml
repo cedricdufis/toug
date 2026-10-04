@@ -818,8 +818,8 @@ sensor:
       - multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: debit_air
-    name: "Débit air"
+    id: debit_air_cible
+    name: "Débit air cible"
     icon: mdi:turbine
     entity_category: diagnostic
     state_class: measurement
@@ -856,8 +856,8 @@ sensor:
     unit_of_measurement: "s"
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: position_detendeur_eev1
-    name: "Position détendeur EEV1"
+    id: position_detendeur_eev
+    name: "Position détendeur EEV"
     icon: mdi:valve-open
     entity_category: diagnostic
     state_class: measurement
