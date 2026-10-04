@@ -321,6 +321,7 @@ binary_sensor:
   - id: !remove ${nombre_thermostats | int < 6 and "canal_k6"}
   - id: !remove ${nombre_thermostats | int < 7 and "canal_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "canal_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "canal_k9"}
 
 text_sensor:
   - platform: modbus_controller
@@ -1314,6 +1315,7 @@ sensor:
   - id: !remove ${nombre_thermostats | int < 6 and "consigne_k6"}
   - id: !remove ${nombre_thermostats | int < 7 and "consigne_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "consigne_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "consigne_k9"}
 # Supprime les temperatures non utilisées   
   - id: !remove ${nombre_thermostats | int < 2 and "temperature_k2"}
   - id: !remove ${nombre_thermostats | int < 3 and "temperature_k3"}
@@ -1322,6 +1324,7 @@ sensor:
   - id: !remove ${nombre_thermostats | int < 6 and "temperature_k6"}
   - id: !remove ${nombre_thermostats | int < 7 and "temperature_k7"}
   - id: !remove ${nombre_thermostats | int < 8 and "temperature_k8"}
+  - id: !remove ${nombre_thermostats | int < 9 and "temperature_k9"}
 
 number:
   - platform: modbus_controller
@@ -1347,7 +1350,18 @@ number:
     register_type: holding
     address: 64
     value_type: U_WORD
+    use_write_multiple: true
     unit_of_measurement: "m³/h"
+    step: 1
+    min_value: 0 #->100
+    max_value: 1200
+    write_lambda: |-
+      // ici x = valeur demandée (en Hz, avant multiplicateur)
+      if (x > 0 && x < 100) {
+        ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
+        return 0;   // renvoit une valeur valide
+      }
+      return x;  // valeur acceptée
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: vitesse_air_cible
@@ -1357,8 +1371,12 @@ number:
     register_type: holding
     address: 152
     value_type: U_WORD
+    use_write_multiple: true
     unit_of_measurement: "m/s"
-    multiply: 0.1
+    step: 0.1
+    min_value: 0
+    max_value: 5
+    multiply: 10
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ventilateur_ui_test
@@ -1368,11 +1386,11 @@ number:
     register_type: holding
     address: 21011
     value_type: U_WORD
+    use_write_multiple: true
     unit_of_measurement: "rpm"
     step: 50
     min_value: 0 #->150
     max_value: 750
-    use_write_multiple: true
     multiply: 10
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
@@ -1390,11 +1408,11 @@ number:
     register_type: holding
     address: 21013
     value_type: S_WORD
+    use_write_multiple: true
     unit_of_measurement: "Hz"
     step: 5
     min_value: 0 #->30
     max_value: 83
-    use_write_multiple: true
     multiply: 10
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
@@ -1411,8 +1429,8 @@ select:
     name: "Mode test"
     icon: mdi:tools
     address: 21000
-    use_write_multiple: true
     value_type: U_DWORD
+    use_write_multiple: true
     optimistic: true
     optionsmap:
       "Aucun": 0
