@@ -1358,8 +1358,7 @@ number:
     address: 152
     value_type: U_WORD
     unit_of_measurement: "m/s"
-    filters:
-      - multiply: 0.1
+    multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ventilateur_ui_test
