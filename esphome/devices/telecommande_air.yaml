@@ -1074,17 +1074,6 @@ sensor:
     unit_of_measurement: "s"
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: usure_filtre
-    name: "Usure filtre"
-    icon: mdi:percent
-    entity_category: diagnostic
-    state_class: measurement
-    register_type: holding
-    address: 20063
-    value_type: U_WORD
-    accuracy_decimals: 0
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
     id: id_test_actif
     name: "ID du test actif"
     icon: mdi:test-tube
