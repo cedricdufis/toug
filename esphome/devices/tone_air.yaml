@@ -90,8 +90,16 @@ binary_sensor:
       - delayed_off: 100ms
 
 # Supprime les commandes non utilisées 
-  - id: !remove ${nombre_thermostats | int < 2 and "commande_k2"} 
-  - id: !remove ${nombre_thermostats | int < 3 and "commande_k3"} 
-  - id: !remove ${nombre_thermostats | int < 4 and "commande_k4"} 
-  - id: !remove ${nombre_thermostats | int < 5 and "commande_k5"} 
-  - id: !remove ${nombre_thermostats | int < 6 and "commande_k6"} 
+  - id: !remove ${nombre_thermostats | int < 2 and "commande_k2"}
+  - id: !remove ${nombre_thermostats | int < 3 and "commande_k3"}
+  - id: !remove ${nombre_thermostats | int < 4 and "commande_k4"}
+  - id: !remove ${nombre_thermostats | int < 5 and "commande_k5"}
+  - id: !remove ${nombre_thermostats | int < 6 and "commande_k6"}
+
+# Supprime les GPIO si non peuplés
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k1a"}
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k2"}
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k3"}
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k4"}
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k5"}
+  - id: !remove ${detecteur_ouverture_bouches == false and "commande_k6"}
