@@ -41,7 +41,6 @@ number:
     step: 0.1
     min_value: 7
     max_value: 61
-    use_write_multiple: true
     unit_of_measurement: "°C"
     multiply: 100
   
@@ -55,7 +54,6 @@ select:
     entity_category: config
     address: 0x0071
     value_type: U_WORD
-    use_write_multiple: true
     optionsmap:
       "Off": 0
       "On": 1

@@ -721,8 +721,8 @@ sensor:
     entity_category: diagnostic
     register_type: holding
     address: 16
-    accuracy_decimals: 0
     value_type: U_DWORD
+    accuracy_decimals: 0
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
       // data[item->offset + 0] : Octet Haut R16
@@ -1204,8 +1204,8 @@ sensor:
     device_class: timestamp
     register_type: holding
     address: 31008
-    accuracy_decimals: 0
     value_type: U_DWORD
+    accuracy_decimals: 0
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
       // data[item->offset + 0] : Octet Haut R16
@@ -1254,8 +1254,8 @@ sensor:
     device_class: timestamp
     register_type: holding
     address: 31010
-    accuracy_decimals: 0
     value_type: U_DWORD
+    accuracy_decimals: 0
     lambda: |-
       // data est un tableau d'octets. Reconstruction des Words (16 bits)
       // data[item->offset + 0] : Octet Haut R16
@@ -1398,7 +1398,6 @@ number:
     name: "Registre mode air et mode ECS télécommande"
     icon: mdi:tools
     entity_category: config
-    use_write_multiple: true
     internal: true
     register_type: holding
     address: 9
@@ -1416,7 +1415,6 @@ number:
     register_type: holding
     address: 64
     value_type: U_WORD
-    use_write_multiple: true
     unit_of_measurement: "m³/h"
     step: 1
     min_value: 0 #->100
@@ -1438,7 +1436,6 @@ number:
     register_type: holding
     address: 152
     value_type: U_WORD
-    use_write_multiple: true
     unit_of_measurement: "m/s"
     step: 0.1
     min_value: 0
@@ -1454,7 +1451,6 @@ number:
     register_type: holding
     address: 21011
     value_type: U_WORD
-    use_write_multiple: true
     unit_of_measurement: "rpm"
     step: 50
     min_value: 0 #->150
@@ -1477,7 +1473,6 @@ number:
     register_type: holding
     address: 21013
     value_type: S_WORD
-    use_write_multiple: true
     unit_of_measurement: "Hz"
     step: 5
     min_value: 0 #->30
@@ -1557,7 +1552,6 @@ select:
     entity_category: config
     address: 31011
     value_type: U_WORD
-    use_write_multiple: true
     optionsmap:
       "Off": 0
       "Lundi": 1
@@ -1576,7 +1570,6 @@ select:
     entity_category: config
     address: 31015
     value_type: U_WORD
-    use_write_multiple: true
     optionsmap:
       "Euros": 0
       "Dollars": 1
@@ -1750,7 +1743,6 @@ output:
     modbus_controller_id: modbus_telecommande
     id: output_led
     register_type: holding
-    use_write_multiple: true
     value_type: U_WORD
     address: 20279
   - platform: modbus_controller
@@ -1759,7 +1751,6 @@ output:
     register_type: holding
     address: 31017
     value_type: U_WORD
-    use_write_multiple: true
     write_lambda: |-
       payload.clear();
       payload.push_back(0x1);

@@ -169,7 +169,6 @@ number:
     step: 1
     min_value: 2
     max_value: 5
-    use_write_multiple: true
     lambda: return x + 2; 
     write_lambda: return x - 2;  
 
@@ -266,7 +265,6 @@ output:
     address: 20279
     register_type: holding
     value_type: U_WORD
-    use_write_multiple: true
     write_lambda: |-
       payload.clear();
       payload.push_back(0x3);
