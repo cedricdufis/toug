@@ -1310,8 +1310,6 @@ number:
     register_type: holding
     address: 16
     value_type: U_DWORD
-    lambda: |-
-          id(update_datetime_from_FAT).execute(registre_16_telecommande, reglage_date_heure);
   # Registre 64
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
