@@ -317,6 +317,7 @@ binary_sensor:
     entity_category: diagnostic
     register_type: holding 
     address: 131
+  # Registre 5029
   - &canal
     platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -374,7 +375,7 @@ binary_sensor:
   - id: !remove ${nombre_thermostats | int < 9 and "canal_k9"}
 
 text_sensor:
-# Registre 1
+  # Registre 1
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: version_logiciel_telecommande
@@ -384,7 +385,7 @@ text_sensor:
     register_type: holding
     address: 1
     raw_encode: HEXBYTES
-# Registre 14
+  # Registre 14
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: identifiant_ihm
@@ -395,7 +396,7 @@ text_sensor:
     address: 14
     response_size: 4
     raw_encode: HEXBYTES
-# Registre 51
+  # Registre 51
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: protection_compresseur
@@ -405,7 +406,7 @@ text_sensor:
     register_type: holding
     address: 51
     raw_encode: HEXBYTES
-# Registre 90
+  # Registre 90
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: defaut_unite_exterieure
@@ -415,7 +416,7 @@ text_sensor:
     register_type: holding
     address: 90
     raw_encode: HEXBYTES
-# Registre 6021
+  # Registre 6021
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: etat_circuit_frigo_telecommande
@@ -436,7 +437,7 @@ text_sensor:
         case 5: return std::string("En cours de modification");
         default: return std::string("Unknown");
       }
-# Registre 20063
+  # Registre 20063
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: etat_filtre
@@ -456,7 +457,7 @@ text_sensor:
         return std::string("Mauvais");
       }
       return std::string("Unknown");
-# Registre 20162
+  # Registre 20162
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: defauts
@@ -505,7 +506,7 @@ text_sensor:
 
       if (out.empty()) return std::string("Aucun");
       return out;
-# Registre 31200
+  # Registre 31200
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: proga
@@ -516,7 +517,7 @@ text_sensor:
     address: 31200
     response_size: 28
     raw_encode: HEXBYTES
-# Registre 31214
+  # Registre 31214
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progb
@@ -527,7 +528,7 @@ text_sensor:
     address: 31214
     response_size: 28
     raw_encode: HEXBYTES
-# Registre 31228
+  # Registre 31228
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progc
@@ -538,7 +539,7 @@ text_sensor:
     address: 31228
     response_size: 28
     raw_encode: HEXBYTES
-# Registre 31242
+  # Registre 31242
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progd
@@ -735,7 +736,7 @@ text_sensor:
       return out;
 
 sensor:
-# Registre 7
+  # Registre 7
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ventilateur_ui
@@ -748,7 +749,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-# Registre 8
+  # Registre 8
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     name: "Consigne compresseur"
@@ -777,7 +778,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 42
+  # Registre 42
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: echangeur_exterieur_thor1
@@ -793,7 +794,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 44
+  # Registre 44
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temperature_sortie_compresseur
@@ -809,7 +810,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 49
+  # Registre 49
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: courant_compresseur
@@ -824,7 +825,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 61
+  # Registre 61
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: vitesse_ventilateur_ui
@@ -839,7 +840,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-# Registre 66
+  # Registre 66
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: frequence_compresseur
@@ -854,7 +855,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-# Registre 72
+  # Registre 72
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_compresseur_on
@@ -867,7 +868,7 @@ sensor:
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
     unit_of_measurement: "s"
-# Registre 91
+  # Registre 91
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: position_detendeur_eev
@@ -880,7 +881,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "Pls"
     accuracy_decimals: 0
-# Registre 93
+  # Registre 93
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: niveau_ventilateur_exterieur
@@ -893,7 +894,7 @@ sensor:
     value_type: U_WORD
     # unit_of_measurement: "?"
     accuracy_decimals: 0
-# Registre 94
+  # Registre 94
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: angle_vanne_3_voies_1_2
@@ -906,7 +907,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "°"
     accuracy_decimals: 0
-# Registre 95
+  # Registre 95
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: angle_vanne_3_voies_1_4
@@ -919,7 +920,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "°"
     accuracy_decimals: 0
-# Registre 115
+  # Registre 115
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: ligne_gaz_th3
@@ -935,7 +936,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 116
+  # Registre 116
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: echangeur_air_crosse_th5
@@ -951,7 +952,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 117
+  # Registre 117
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: echangeur_air_capillaire_th6
@@ -967,7 +968,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 142
+  # Registre 142
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: canaux_actifs
@@ -976,7 +977,7 @@ sensor:
     value_type: U_WORD
     register_type: holding
     address: 142
-# Registre 150
+  # Registre 150
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_compresseur_off
@@ -989,7 +990,7 @@ sensor:
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
     unit_of_measurement: "s"
-# Registre 157
+  # Registre 157
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: pression_statique_cible
@@ -1003,7 +1004,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "Pa"
     accuracy_decimals: 0
-# Registre 190
+  # Registre 190
   - &temperature_commune
     platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1019,52 +1020,52 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.01 
-# Registre 191
+  # Registre 191
   - <<: *temperature_commune
     id: temperature_k1b
     name: "Température ${K1b}"
     address: 191
-# Registre 192
+  # Registre 192
   - <<: *temperature_commune
     id: temperature_k2
     name: "Température ${K2}"
     address: 192
-# Registre 193
+  # Registre 193
   - <<: *temperature_commune
     id: temperature_k3
     name: "Température ${K3}"
     address: 193
-# Registre 194
+  # Registre 194
   - <<: *temperature_commune
     id: temperature_k4
     name: "Température ${K4}"
     address: 194
-# Registre 195
+  # Registre 195
   - <<: *temperature_commune
     id: temperature_k5
     name: "Température ${K5}"
     address: 195
-# Registre 196
+  # Registre 196
   - <<: *temperature_commune
     id: temperature_k6
     name: "Température ${K6}"
     address: 196
-# Registre 197
+  # Registre 197
   - <<: *temperature_commune
     id: temperature_k7
     name: "Température ${K7}"
     address: 197
-# Registre 198
+  # Registre 198
   - <<: *temperature_commune
     id: temperature_k8
     name: "Température ${K8}"
     address: 198
-# Registre 199
+  # Registre 199
   - <<: *temperature_commune
     id: temperature_k9
     name: "Température ${K9}"
     address: 199
-# Registre 20047
+  # Registre 20047
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_ventilateur_on
@@ -1077,7 +1078,7 @@ sensor:
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
     unit_of_measurement: "s"
-# Registre 20049
+  # Registre 20049
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temps_cumul_compresseur_on
@@ -1090,7 +1091,7 @@ sensor:
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
     unit_of_measurement: "s"
-# Registre 21000
+  # Registre 21000
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: id_test_actif
@@ -1100,7 +1101,7 @@ sensor:
     address: 21000
     register_type: holding
     value_type: U_WORD
-# Registre 21668
+  # Registre 21668
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: conso_chauffage
@@ -1112,7 +1113,7 @@ sensor:
     device_class: energy
     state_class: total_increasing
     unit_of_measurement: "kWh"
-# Registre 21670
+  # Registre 21670
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: conso_chauffage_appoint
@@ -1124,7 +1125,7 @@ sensor:
     device_class: energy
     state_class: total_increasing
     unit_of_measurement: "kWh"
-# Registre 21676
+  # Registre 21676
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: conso_rafraichissement
@@ -1136,7 +1137,7 @@ sensor:
     device_class: energy
     state_class: total_increasing
     unit_of_measurement: "kWh"
-# Registre 21678
+  # Registre 21678
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: cout_chauffage
@@ -1151,7 +1152,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
-# Registre 21680
+  # Registre 21680
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: cout_rafraichissement
@@ -1166,7 +1167,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.001
-# Registre 30026
+  # Registre 30026
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: nb_canaux
@@ -1180,7 +1181,7 @@ sensor:
     filters:
       # Soustrait 1 à la valeur lue du registre
       - lambda: return x - 1;
-# Registre 31007
+  # Registre 31007
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: composition_foyer
@@ -1209,7 +1210,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-# Registre 31100
+  # Registre 31100
   - &consigne_zone
     platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1225,47 +1226,47 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-# Registre 31101
+  # Registre 31101
   - <<: *consigne_zone
     id: consigne_k1b
     name: "Consigne zone ${K1b}"
     address: 31101
-# Registre 31102
+  # Registre 31102
   - <<: *consigne_zone
     id: consigne_k2
     name: "Consigne zone ${K2}"
     address: 31102
-# Registre 31103
+  # Registre 31103
   - <<: *consigne_zone
     id: consigne_k3
     name: "Consigne zone ${K3}"
     address: 31103
-# Registre 31104
+  # Registre 31104
   - <<: *consigne_zone
     id: consigne_k4
     name: "Consigne zone ${K4}"
     address: 31104
-# Registre 31105
+  # Registre 31105
   - <<: *consigne_zone
     id: consigne_k5
     name: "Consigne zone ${K5}"
     address: 31105
-# Registre 31106
+  # Registre 31106
   - <<: *consigne_zone
     id: consigne_k6
     name: "Consigne zone ${K6}"
     address: 31106
-# Registre 31107
+  # Registre 31107
   - <<: *consigne_zone
     id: consigne_k7
     name: "Consigne zone ${K7}"
     address: 31107
-# Registre 31108
+  # Registre 31108
   - <<: *consigne_zone
     id: consigne_k8
     name: "Consigne zone ${K8}"
     address: 31108
-# Registre 31109
+  # Registre 31109
   - <<: *consigne_zone
     id: consigne_k9
     name: "Consigne zone ${K9}"
@@ -1290,7 +1291,7 @@ sensor:
   - id: !remove ${nombre_thermostats | int < 9 and "temperature_k9"}
 
 number:
-# Registre 9
+  # Registre 9 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: registre_9_telecommande
@@ -1332,7 +1333,7 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x;  // valeur acceptée
-  # Registre 152
+    # Registre 152
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: vitesse_air_cible
@@ -1347,7 +1348,7 @@ number:
     min_value: 0
     max_value: 5
     multiply: 10
-  # Registre 21011
+    # Registre 21011
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ventilateur_ui_test
@@ -1369,7 +1370,7 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
-  # Registre 21013
+    # Registre 21013
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_compresseur_test
@@ -1464,7 +1465,7 @@ datetime:
             id(update_FAT_from_datetime).execute(registre_31010_telecommande, vacances_fin);
 
 select:
-# Registre 21000
+  # Registre 21000
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: mode_test
@@ -1520,14 +1521,14 @@ select:
                           lambda: 'return (strcmp(x.c_str(), "Chauffage") == 0) || (strcmp(x.c_str(), "Clim") == 0);'
                         then:
                           - script.execute: consigne_test
-# Registre 31011
+  # Registre 31012
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: jour_cycle_antilegionnelle
     name: "Jour cycle antilégionnelle"
     icon: mdi:virus-off
     entity_category: config
-    address: 31011
+    address: 31012
     value_type: U_WORD
     optionsmap:
       "Off": 0
@@ -1538,7 +1539,7 @@ select:
       "Vendredi": 5
       "Samedi": 6
       "Dimanche": 7
-# Registre 31015
+  # Registre 31015
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: devise
@@ -1550,7 +1551,7 @@ select:
     optionsmap:
       "Euros": 0
       "Dollars": 1
-# Registre 9
+  # Registre 9
   - platform: template
     id: mode_air_telecommande
     name: "Mode air télécommande"
@@ -1569,7 +1570,6 @@ select:
     lambda: |-
       id(update_mode_air_telecommande).execute();
       return std::string(id(mode_air_telecommande).current_option());
-    #ÉCRITURE (set_action) : Combine le MSB du reg_9 et la nouvelle valeur LSB.
     set_action:
       lambda: |-
         uint16_t new_air_mode;
