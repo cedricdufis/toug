@@ -4,6 +4,9 @@ esphome:
       - select.set:
           id: mode_test
           option: "Aucun"
+      - lambda: |-
+          id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
+          id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
 
 api:
   actions:
@@ -327,7 +330,7 @@ binary_sensor:
   - platform: template
     id: status_hors_gel
     name: "Status hors-gel"
-    icon: mdi:beach
+    icon: mdi:snowflake
     device_class: presence
     lambda: |-
       float t_deb = id(registre_31008_telecommande).state;
@@ -1472,13 +1475,11 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-start-outline
     entity_category: config
+    update_interval: never # Pour ne prendre la valeur qu'au début
+    optimistic: true
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
       return id(vacances_debut).state_as_esptime();
-    set_action:
-      then:
-        - lambda: |-
-            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
   # Registre 31010
   - platform: template
     name: "Vacances fin"
@@ -1486,13 +1487,11 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-end-outline
     entity_category: config
+    update_interval: never # Pour ne prendre la valeur qu'au début
+    optimistic: true
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
       return id(vacances_fin).state_as_esptime();
-    set_action:
-      then:
-        - lambda: |-
-            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
 
 select:
   # Registre 21000
