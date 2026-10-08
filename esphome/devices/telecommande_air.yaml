@@ -294,7 +294,7 @@ script:
           }
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
-                   year, month, day, hour, minute, second, combined);
+                   year, month, day, hour, minute, second, FATdatetime);
 
 uart:
   - id: U2
