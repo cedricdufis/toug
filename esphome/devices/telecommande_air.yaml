@@ -204,7 +204,7 @@ script:
           // Combine into uint32_t
           uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
           // Apply timezone shift
-          datetime_encoded -= homeassistant_time.get_timezone_offset();
+          datetime_encoded -= homeassistant_time.timezone_offset();
           // Publish
           if(ModbusRegister == "registre_16_telecommande")
             id(registre_16_telecommande).publish_state(datetime_encoded);
@@ -236,7 +236,7 @@ script:
             return;
           }
           // Apply timezone shift
-          combined += homeassistant_time.get_timezone_offset();
+          combined += homeassistant_time.timezone_offset();
           uint16_t date_reg = combined >> 16;
           uint16_t time_reg = combined & 0xFFFF;
           // Decode with validation
