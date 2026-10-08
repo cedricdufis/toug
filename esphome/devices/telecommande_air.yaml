@@ -149,12 +149,18 @@ script:
     then:
       - lambda: |-
           ESPTime t;
-          if(datetimeRegister == "reglage_date_heure")
-            t = id(reglage_date_heure).state_as_esp_time();
-          else if(datetimeRegister == "vacances_debut")
-            t = id(vacances_debut).state_as_esp_time();
-          else if(datetimeRegister == "vacances_fin")
-            t = id(vacances_fin).state_as_esp_time();
+          if(datetimeRegister == "reglage_date_heure") {
+            auto call_reglage_date_heure = id(reglage_date_heure).make_call();
+            t = id(call_reglage_date_heure).state_as_esp_time();
+          }
+          else if(datetimeRegister == "vacances_debut") {
+            auto call_vacances_debut = id(vacances_debut).make_call();
+            t = id(call_vacances_debut).state_as_esp_time();
+          }
+          else if(datetimeRegister == "vacances_fin") {
+            auto call_vacances_fin = id(vacances_fin).make_call();
+            t = id(call_vacances_fin).state_as_esp_time();
+          }
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
@@ -263,17 +269,17 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            }
+          }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            }
+          }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            }
+          }
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, combined);
