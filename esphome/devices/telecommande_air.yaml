@@ -219,6 +219,15 @@ script:
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
             return;
           }
+          uint16_t date_reg = combined >> 16;
+          uint16_t time_reg = combined & 0xFFFF;
+          // Decode with validation
+          uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
+          uint8_t month = (date_reg >> 5) & 0x0F;
+          uint8_t day = date_reg & 0x1F;
+          uint8_t hour = (time_reg >> 11) & 0x1F;
+          uint8_t minute = (time_reg >> 5) & 0x3F;
+          uint8_t second = (time_reg & 0x1F) << 1;
           // Check minimum date: 2016-01-01
           if (year < 2016) {
             ESP_LOGE("update_datetime_from_modbus", 
@@ -243,15 +252,6 @@ script:
                      "Invalid time: %02d:%02d:%02d", hour, minute, second);
             return;
           }
-          uint16_t date_reg = combined >> 16;
-          uint16_t time_reg = combined & 0xFFFF;
-          // Decode with validation
-          uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
-          uint8_t month = (date_reg >> 5) & 0x0F;
-          uint8_t day = date_reg & 0x1F;
-          uint8_t hour = (time_reg >> 11) & 0x1F;
-          uint8_t minute = (time_reg >> 5) & 0x3F;
-          uint8_t second = (time_reg & 0x1F) << 1;
           ESPTime t;
           t.year = year;
           t.month = month;
