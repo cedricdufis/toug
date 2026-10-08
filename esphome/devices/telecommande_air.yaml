@@ -259,12 +259,21 @@ script:
           t.hour = hour;
           t.minute = minute;
           t.second = second;
-          if(datetimeRegister == "reglage_date_heure")
-            id(reglage_date_heure).publish_state(t);
-          else if(datetimeRegister == "vacances_debut")
-            id(vacances_debut).publish_state(t);
-          else if(datetimeRegister == "vacances_fin")
-            id(vacances_fin).publish_state(t);
+          if(datetimeRegister == "reglage_date_heure") {
+            auto call_reglage_date_heure = id(reglage_date_heure).make_call();
+            call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
+            call_reglage_date_heure.perform();
+            }
+          else if(datetimeRegister == "vacances_debut") {
+            auto call_vacances_debut = id(vacances_debut).make_call();
+            call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
+            call_vacances_debut.perform();
+            }
+          else if(datetimeRegister == "vacances_fin") {
+            auto call_vacances_fin = id(vacances_fin).make_call();
+            call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
+            call_vacances_fin.perform();
+            }
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, combined);
