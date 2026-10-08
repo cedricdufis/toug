@@ -141,7 +141,112 @@ script:
             - logger.log:
                 format: "TEST : Timeout test sélectionné -> Annulation"
                 level: ERROR
-  
+  - id: update_FAT_from_datetime
+    mode: parallel
+    parameters:
+      FATRegister: string
+      datetimeRegister: string
+    then:
+      - lambda: |-
+          ESPTime t = id(FATRegister).state_as_esp_time();
+          // Validate ESPTime is valid
+          // Check minimum date: 2016-01-01
+          if (t.year < 2016) {
+            ESP_LOGE("update_FAT_from_datetime", 
+                     "Date %04d-%02d-%02d is before minimum (2016-01-01)",
+                     t.year, t.month, t.day_of_month);
+            return;
+          }
+          if (t.year > 2100) {
+            ESP_LOGE("update_FAT_from_datetime", 
+                     "Year %d exceeds maximum (2100)", t.year);
+            return;
+          }
+          if (t.month < 1 || t.month > 12) {
+            ESP_LOGE("update_FAT_from_datetime", "Invalid month: %d", t.month);
+            return;
+          }
+          if (t.day_of_month < 1 || t.day_of_month > 31) {
+            ESP_LOGE("update_FAT_from_datetime", "Invalid day: %d", t.day_of_month);
+            return;
+          }
+          if (t.hour > 23 || t.minute > 59 || t.second > 59) {
+            ESP_LOGE("update_FAT_from_datetime", 
+                     "Invalid time: %02d:%02d:%02d", t.hour, t.minute, t.second);
+            return;
+          }
+          // [Year offset from 1980 (7b:15-9)][Month (4b:8-5)][Day (5b:4-0)]
+          uint16_t year_pac = (uint16_t)(t.year - 1980) & 0x7F;
+          uint16_t date_reg = (year_pac << 9) | (t.month << 5) | t.day_of_month;
+          // [Hours (5b:15-11)][Minutes (6b:10-5)][Seconds/2 (5b:4-0)]
+          // Note: Seconds stored in 2-second steps (0-29 representing 0-58s)
+          uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
+          // Combine into uint32_t
+          uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
+          // Publish
+          id(datetimeRegister).publish_state(datetime_encoded);
+          ESP_LOGD("update_FAT_from_datetime", 
+                   "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
+                   t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
+                   datetime_encoded);
+  - id: update_datetime_from_FAT
+    mode: parallel
+    parameters:
+      FATRegister: string
+      datetimeRegister: string
+    then:
+      - lambda: |-
+          uint32_t combined = (uint32_t)id(datetimeRegister).state;
+          // Validate we have data
+          if (combined == 0) {
+            ESP_LOGW("update_datetime_from_FAT", "No data at address %s", datetimeRegister);
+            return;
+          }
+          // Check minimum date: 2016-01-01
+          if (year < 2016) {
+            ESP_LOGE("update_datetime_from_FAT", 
+                     "Decoded date %04d-%02d-%02d is before minimum (2016-01-01)",
+                     year, month, day);
+            return;
+          }
+          if (year > 2100) {
+            ESP_LOGE("update_datetime_from_FAT", "Year %d exceeds maximum (2100)", year);
+            return;
+          }
+          if (month < 1 || month > 12) {
+            ESP_LOGE("update_datetime_from_FAT", "Invalid month: %d", month);
+            return;
+          }
+          if (day < 1 || day > 31) {
+            ESP_LOGE("update_datetime_from_FAT", "Invalid day: %d", day);
+            return;
+          }
+          if (hour > 23 || minute > 59 || second > 59) {
+            ESP_LOGE("update_datetime_from_FAT", 
+                     "Invalid time: %02d:%02d:%02d", hour, minute, second);
+            return;
+          }
+          uint16_t date_reg = combined >> 16;
+          uint16_t time_reg = combined & 0xFFFF;
+          // Decode with validation
+          uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
+          uint8_t month = (date_reg >> 5) & 0x0F;
+          uint8_t day = date_reg & 0x1F;
+          uint8_t hour = (time_reg >> 11) & 0x1F;
+          uint8_t minute = (time_reg >> 5) & 0x3F;
+          uint8_t second = (time_reg & 0x1F) << 1;
+          ESPTime t;
+          t.year = year;
+          t.month = month;
+          t.day_of_month = day;
+          t.hour = hour;
+          t.minute = minute;
+          t.second = second;
+          id(FATRegister).publish_state(t);
+          ESP_LOGD("update_datetime_from_FAT", 
+                   "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
+                   year, month, day, hour, minute, second, combined);
+
 globals:
   - id: last_test_index
     type: int
@@ -151,94 +256,6 @@ globals:
 time:
   - platform: homeassistant
     id: homeassistant_time
-
-datetime:
-  - platform: template
-    name: "Vacances début"
-    id: vacances_debut
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:calendar-start-outline
-    entity_category: config
-    update_interval: 10s
-    optimistic: true
-  - platform: template
-    name: "Vacances fin"
-    id: vacances_fin
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:calendar-end-outline
-    entity_category: config
-    update_interval: 10s
-    optimistic: true
-  - platform: template
-    name: "Réglage Date⁄Heure"
-    id: user_set_time
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:clock-edit
-    entity_category: config
-    update_interval: 10s
-    # Rendre l'entité persistante après redémarrage (bon pour les réglages)
-    # Source de la valeur : Récupère le timestamp du sensor interne
-    lambda: |-
-      float epoch = id(timestamp_telecommande).state;
-      if (std::isnan(epoch) || epoch == 0) {
-        return {};  // valeur invalide -> datetime vide
-      }
-
-      // Conversion en structure tm
-      time_t t = (time_t) epoch;
-      struct tm *timeinfo = localtime(&t);
-
-      // Création d’un objet ESPTime à partir de la struct tm
-      ESPTime time;
-      time.year  = timeinfo->tm_year + 1900;
-      time.month = timeinfo->tm_mon + 1;
-      time.day_of_month = timeinfo->tm_mday;
-      time.hour  = timeinfo->tm_hour;
-      time.minute = timeinfo->tm_min;
-      time.second = timeinfo->tm_sec;
-
-      return time;
-    set_action:
-      then:
-        - lambda: |-
-            // x est l'objet ESPTime qui représente la nouvelle date/heure définie par l'utilisateur
-            // Convertir l'ESPTime en une structure tm pour un accès facile aux parties
-            struct tm time_info = x.to_c_tm();
-
-            // --- A. Préparation des variables Date/Heure (Format PAC) ---
-            
-            // Calcul de l'Année: (Année Actuelle - 1980)
-            uint16_t year_pac_offset = (uint16_t)(time_info.tm_year + 1900 - 1980);
-            
-            // Conversion des minutes/secondes en "unités de temps" Modbus (R17)
-            uint16_t total_seconds = time_info.tm_min * 60 + time_info.tm_sec;
-            // Unité de temps = Secondes / 1.875s (soit Secondes * 8 / 15)
-            uint16_t time_units_calculated = (uint16_t)(total_seconds / 1.875f);
-            
-            // --- B. Reconstitution des Registres 16 et 17 ---
-
-            // Registre 16 (Date): [Année Offset (7 bits)] [Mois (4 bits)] [Jour (5 bits)]
-            uint8_t month = time_info.tm_mon + 1;
-            uint16_t date_reg = (year_pac_offset << 9) | (month << 5) | time_info.tm_mday;
-            
-            // Registre 17 (Heure): [Heures (5 bits)] [Unités de Temps (11 bits)]
-            uint16_t final_time_reg = (time_info.tm_hour << 11) | (time_units_calculated & 0x7FF);
-
-
-            // --- C. Envoi de la commande Modbus (Registre 16 et 17) ---
-            
-            std::vector<uint16_t> rtc_data = {date_reg, final_time_reg};
-
-            modbus_controller::ModbusController *controller = id(modbus_telecommande);
-
-            // Créer la commande d'écriture multiple (Fonction 16/0x10)
-            modbus_controller::ModbusCommandItem set_rtc_command =
-                modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 16, 2, rtc_data);
-
-            controller->queue_command(set_rtc_command);
-            
-            ESP_LOGI("Télécommande", "Date/heure modifiée manuellement :  %04d-%02d-%02d %02d:%02d:%02d", 
-                      time_info.tm_year + 1900, month, time_info.tm_mday, time_info.tm_hour, time_info.tm_min, time_info.tm_sec);
 
 uart:
   - id: U2
@@ -259,6 +276,39 @@ modbus_controller:
     modbus_id: modbus2
 
 binary_sensor:
+  - platform: template
+    id: status_vacances
+    name: "Status vacances"
+    icon: mdi:beach
+    device_class: presence
+    lambda: |-
+      float t_deb = id(registre_31008_telecommande).state;
+      float t_fin = id(registre_31010_telecommande).state;
+      float t_now = id(registre_16_telecommande).state;
+      if (std::isnan(t_deb) || std::isnan(t_fin) || t_deb == 0 || t_fin == 0)
+        return false;
+      if (t_now <= t_deb || t_fin <= t_now)
+        return false;
+      if (t_fin <= t_deb)
+        return false;
+      return true;
+  - platform: template
+    id: status_hors_gel
+    name: "Status hors-gel"
+    icon: mdi:beach
+    device_class: presence
+    lambda: |-
+      float t_deb = id(registre_31008_telecommande).state;
+      float t_fin = id(registre_31010_telecommande).state;
+      float t_now = id(registre_16_telecommande).state;
+      if (std::isnan(t_deb) || std::isnan(t_fin) || t_deb == 0 || t_fin != 0)
+        return false;
+      if (t_fin <= t_now)
+        return false;
+      if (t_fin <= t_deb)
+        return false;
+      return true;
+  # Registre 131
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: etat_degivrage
@@ -711,58 +761,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-# Registre 16
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: timestamp_telecommande
-    name: "Horloge télécommande"
-    icon: mdi:clock-outline
-    device_class: timestamp
-    entity_category: diagnostic
-    register_type: holding
-    address: 16
-    value_type: U_DWORD
-    accuracy_decimals: 0
-    lambda: |-
-      // data est un tableau d'octets. Reconstruction des Words (16 bits)
-      // data[item->offset + 0] : Octet Haut R16
-      // data[item->offset + 1] : Octet Bas R16
-      // data[item->offset + 2] : Octet Haut R17
-      // data[item->offset + 3] : Octet Bas R17
-      
-      // Reconstruction du Registre 16 (Date)
-      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
-      
-      // Reconstruction du Registre 17 (Heure)
-      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
-
-      // --- Logique de Décodage ---
-      // Date
-      uint8_t day      = date_reg & 0x1F;
-      uint8_t month    = (date_reg >> 5) & 0x0F;
-      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
-      
-      // Heure (Unités de temps)
-      uint8_t hours    = (time_reg >> 11) & 0x1F; 
-      uint16_t time_units = time_reg & 0x7FF;
-      
-      float seconds_total = time_units * 1.875f;
-      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
-      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
-
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
-# Registre 39
+  # Registre 39
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: temperature_exterieure_thoa
@@ -1195,107 +1194,7 @@ sensor:
     filters:
       # Ajoute 2 à la valeur lue du registre
       - lambda: return x + 2;
-# Registre 31008
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: timestamp_debut_vacances
-    name: "Début vacances"
-    icon: mdi:clock-outline
-    device_class: timestamp
-    register_type: holding
-    address: 31008
-    value_type: U_DWORD
-    accuracy_decimals: 0
-    lambda: |-
-      // data est un tableau d'octets. Reconstruction des Words (16 bits)
-      // data[item->offset + 0] : Octet Haut R16
-      // data[item->offset + 1] : Octet Bas R16
-      // data[item->offset + 2] : Octet Haut R17
-      // data[item->offset + 3] : Octet Bas R17
-      
-      // Reconstruction du Registre 16 (Date)
-      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
-      
-      // Reconstruction du Registre 17 (Heure)
-      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
-
-      // --- Logique de Décodage ---
-      // Date
-      uint8_t day      = date_reg & 0x1F;
-      uint8_t month    = (date_reg >> 5) & 0x0F;
-      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
-      
-      // Heure (Unités de temps)
-      uint8_t hours    = (time_reg >> 11) & 0x1F; 
-      uint16_t time_units = time_reg & 0x7FF;
-      
-      float seconds_total = time_units * 1.875f;
-      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
-      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
-
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
-# Registre 31010
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: timestamp_fin_vacances
-    name: "Fin vacances"
-    icon: mdi:clock-outline
-    device_class: timestamp
-    register_type: holding
-    address: 31010
-    value_type: U_DWORD
-    accuracy_decimals: 0
-    lambda: |-
-      // data est un tableau d'octets. Reconstruction des Words (16 bits)
-      // data[item->offset + 0] : Octet Haut R16
-      // data[item->offset + 1] : Octet Bas R16
-      // data[item->offset + 2] : Octet Haut R17
-      // data[item->offset + 3] : Octet Bas R17
-      
-      // Reconstruction du Registre 16 (Date)
-      uint16_t date_reg = data[item->offset + 0] << 8 | data[item->offset + 1];
-      
-      // Reconstruction du Registre 17 (Heure)
-      uint16_t time_reg = data[item->offset + 2] << 8 | data[item->offset + 3];
-
-      // --- Logique de Décodage ---
-      // Date
-      uint8_t day      = date_reg & 0x1F;
-      uint8_t month    = (date_reg >> 5) & 0x0F;
-      uint16_t year    = 1980 + ((date_reg >> 9) & 0x7F);
-      
-      // Heure (Unités de temps)
-      uint8_t hours    = (time_reg >> 11) & 0x1F; 
-      uint16_t time_units = time_reg & 0x7FF;
-      
-      float seconds_total = time_units * 1.875f;
-      uint8_t minutes = (uint8_t)(seconds_total / 60) % 60;
-      uint8_t secs    = (uint8_t)((int)seconds_total % 60);
-
-      // --- Conversion en timestamp UNIX ---
-      struct tm t;
-      t.tm_year = year - 1900;
-      t.tm_mon  = month - 1;
-      t.tm_mday = day;
-      t.tm_hour = hours;
-      t.tm_min  = minutes;
-      t.tm_sec  = secs;
-      t.tm_isdst = -1; 
-
-      time_t epoch = mktime(&t);
-      return (float)epoch;
-# Registre 31013
+  # Registre 31013
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: tarif_kwh
@@ -1395,9 +1294,6 @@ number:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: registre_9_telecommande
-    name: "Registre mode air et mode ECS télécommande"
-    icon: mdi:tools
-    entity_category: config
     internal: true
     register_type: holding
     address: 9
@@ -1405,7 +1301,17 @@ number:
     on_value:
       - lambda: |-
           id(update_mode_air_telecommande).execute();
-# Registre 64
+  # Registre 16 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_16_telecommande
+    internal: true
+    register_type: holding
+    address: 16
+    value_type: U_DWORD
+    lambda: |-
+          id(update_datetime_from_FAT).execute(registre_16_telecommande, reglage_date_heure);
+  # Registre 64
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: debit_air_cible
@@ -1485,6 +1391,77 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
+  # Registre 31008 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_31008_telecommande
+    internal: true
+    register_type: holding
+    address: 31008
+    value_type: U_DWORD
+    on_value:
+      - lambda: |-
+          if (x == 0) {
+            id(vacances).turn_off();
+            id(hors_gel).turn_off();
+          }
+  # Registre 31010 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_31010_telecommande
+    internal: true
+    register_type: holding
+    address: 31010
+    value_type: U_DWORD
+    on_value:
+      - lambda: |-
+          if (x == 0) {
+            id(vacances).turn_off();
+          }
+
+datetime:
+  # Registre 16
+  - platform: template
+    name: "Réglage Date⁄Heure"
+    id: reglage_date_heure
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:clock-edit
+    entity_category: config
+    lambda: |-
+      id(update_datetime_from_FAT).execute(registre_16_telecommande, reglage_date_heure);
+      return id(reglage_date_heure).state_as_esptime();
+    set_action:
+      then:
+        - lambda: |-
+            id(update_FAT_from_datetime).execute(registre_16_telecommande, reglage_date_heure);
+  # Registre 31008
+  - platform: template
+    name: "Vacances début"
+    id: vacances_debut
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:calendar-start-outline
+    entity_category: config
+    lambda: |-
+      id(update_datetime_from_FAT).execute(registre_31008_telecommande, vacances_debut);
+      return id(vacances_debut).state_as_esptime();
+    set_action:
+      then:
+        - lambda: |-
+            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
+  # Registre 31010
+  - platform: template
+    name: "Vacances fin"
+    id: vacances_fin
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:calendar-end-outline
+    entity_category: config
+    lambda: |-
+      id(update_datetime_from_FAT).execute(registre_31010_telecommande, vacances_fin);
+      return id(vacances_fin).state_as_esptime();
+    set_action:
+      then:
+        - lambda: |-
+            id(update_FAT_from_datetime).execute(registre_31010_telecommande, vacances_fin);
 
 select:
 # Registre 21000
@@ -1617,117 +1594,45 @@ select:
 
 switch:
   - platform: template
-    id: hors_gel
-    name: "Hors-gel"
-    icon: mdi:snowflake
-    entity_category: config
-    lambda: |-
-      return (((int)id(timestamp_debut_vacances).state != 312764416) &&
-              ((int)id(timestamp_fin_vacances).state == 312764416));
-    turn_on_action:
-      - datetime.datetime.set:
-          id: vacances_debut
-          datetime: !lambda |-
-            return {.second = id(user_set_time).second, .minute = id(user_set_time).minute, .hour = id(user_set_time).hour, .day_of_month = id(user_set_time).hour, .month = id(user_set_time).month, .year = id(user_set_time).year};
-      - lambda: |-
-          std::vector<uint16_t> rtc_data = {0, 0};
-          modbus_controller::ModbusController *controller = id(modbus_telecommande);
-          // Créer la commande d'écriture multiple (Fonction 16/0x10)
-          modbus_controller::ModbusCommandItem set_rtc_command =
-              modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 31010, 2, rtc_data);
-          controller->queue_command(set_rtc_command);
-    turn_off_action:
-      - button.press: desactiver_vacances
-      - switch.turn_off: vacances
-  - platform: template
     id: vacances
     name: "Vacances"
     icon: mdi:beach
     entity_category: config
-    restore_mode: DISABLED 
-    lambda: |-
-      float t_deb = id(timestamp_debut_vacances).state;
-      float t_fin = id(timestamp_fin_vacances).state;
-      float t_now = id(timestamp_telecommande).state;
-      if (std::isnan(t_deb) || std::isnan(t_fin) ||
-          t_deb <= 312764416 || t_fin <= 312764416)
-        return false;
-      if (t_deb <= t_now || t_fin <= t_now)
-        return false;
-      if (t_fin <= t_deb)
-        return false;
-      return true;
+    restore_mode: DISABLED
     turn_on_action:
       - lambda: |-
-          // Lire l'heure actuelle (timestamp télécommande)
-          float now_epoch = id(timestamp_telecommande).state;
-          if (std::isnan(now_epoch) || now_epoch <= 0) {
-            ESP_LOGE("Vacances", "timestamp_telecommande invalide -> abort");
-            return;
-          }
-          time_t t_now = (time_t) now_epoch;
-
-          // ---- Conversion des datetime en time_t (epoch) ----
-          // Début
-            ESPTime dt = id(vacances_debut).state_as_esptime();
-            struct tm tmv = dt.to_c_tm();
-            time_t t_deb_user = mktime(&tmv);
-
-          // Fin
-            dt = id(vacances_fin).state_as_esptime();
-            tmv = dt.to_c_tm();
-            time_t t_fin_user = mktime(&tmv);
-
-          // ---- Validations ----
-          bool erreur = false;
-          if (t_deb_user <= t_now) {
-            ESP_LOGE("Vacances", "Début vacances <= maintenant -> refus");
-            erreur = true;
-          }
-          if (t_fin_user <= t_now) {
-            ESP_LOGE("Vacances", "Fin vacances <= maintenant -> refus");
-            erreur = true;
-          }
-          if (t_fin_user <= t_deb_user) {
-            ESP_LOGE("Vacances", "Fin <= Début -> refus");
-            erreur = true;
-          }
-          if (erreur){
-            auto call1 = id(vacances_debut).make_call();
-            call1.set_datetime("1970-01-01 00:00:00");
-            call1.perform();
-            auto call2 = id(vacances_fin).make_call();
-            call2.set_datetime("1970-01-01 00:00:00");
-            call2.perform();
-            return;
-            }
-          // ---- Conversion en registres PAC ----
-          auto make_regs = [&](time_t ts) {
-            struct tm *ti = localtime(&ts);
-            uint16_t year_pac = (uint16_t)(ti->tm_year + 1900 - 1980) & 0x7F;
-            uint16_t date_reg = (year_pac << 9) | ((ti->tm_mon + 1) << 5) | ti->tm_mday;
-            uint16_t total_seconds = ti->tm_min * 60 + ti->tm_sec;
-            uint16_t units = (uint16_t)(total_seconds / 1.875f) & 0x7FF;
-            uint16_t time_reg = (ti->tm_hour << 11) | units;
-            return std::pair<uint16_t,uint16_t>(date_reg, time_reg);
-          };
-
-          auto deb = make_regs(t_deb_user);
-          auto fin = make_regs(t_fin_user);
-
-          std::vector<uint16_t> regs = {
-            deb.first, deb.second,
-            fin.first, fin.second
-          };
-
-          auto *ctl = id(modbus_telecommande);
-          auto cmd = modbus_controller::ModbusCommandItem::create_write_multiple_command(
-            ctl, 31008, regs.size(), regs);
-          ctl->queue_command(cmd);
-
-          ESP_LOGI("Vacances", "Activation OK");
+            id(hors_gel).turn_off();
+            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
+            id(update_FAT_from_datetime).execute(registre_31010_telecommande, vacances_fin);
     turn_off_action:
-      - button.press: desactiver_vacances
+      - lambda: |-
+          auto call = id(vacances_debut).make_call();
+          call.set_value(0);
+          call.perform();
+          auto call = id(vacances_fin).make_call();
+          call.set_value(0);
+          call.perform();
+  - platform: template
+    id: hors_gel
+    name: "Hors-gel"
+    icon: mdi:snowflake
+    entity_category: config
+    restore_mode: DISABLED
+    turn_on_action:
+      - lambda: |-
+            id(vacances).turn_off();
+            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
+            auto call = id(vacances_fin).make_call();
+            call.set_value(0);
+            call.perform();
+    turn_off_action:
+      - lambda: |-
+          auto call = id(vacances_debut).make_call();
+          call.set_value(0);
+          call.perform();
+          auto call = id(vacances_fin).make_call();
+          call.set_value(0);
+          call.perform();
 
 # Example configuration entry
 light:
@@ -1765,17 +1670,3 @@ button:
     on_press:
       - output.turn_on:
           id: reset_conso
-  - platform: template
-    id: desactiver_vacances
-    name: "Désactiver vacances"
-    icon: mdi:beach-off
-    entity_category: config
-    on_press:
-      - lambda: |-
-          std::vector<uint16_t> rtc_data = {0, 0, 0, 0};
-          modbus_controller::ModbusController *controller = id(modbus_telecommande);
-          // Créer la commande d'écriture multiple (Fonction 16/0x10)
-          modbus_controller::ModbusCommandItem set_rtc_command =
-              modbus_controller::ModbusCommandItem::create_write_multiple_command(controller, 31008, 4, rtc_data);
-          controller->queue_command(set_rtc_command);
-          ESP_LOGI("Télécommande", "Désactivation vacances");
