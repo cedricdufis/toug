@@ -192,10 +192,10 @@ script:
           // Publish
           if(datetimeRegister == "reglage_date_heure")
             id(reglage_date_heure).publish_state(datetime_encoded);
-          else if(datetimeRegister == "vacance_debut")
-            id(vacance_debut).publish_state(datetime_encoded);
-          else if(datetimeRegister == "vacance_fin")
-            id(vacance_fin).publish_state(datetime_encoded);
+          else if(datetimeRegister == "vacances_debut")
+            id(vacances_debut).publish_state(datetime_encoded);
+          else if(datetimeRegister == "vacances_fin")
+            id(vacances_fin).publish_state(datetime_encoded);
           ESP_LOGD("update_FAT_from_datetime", 
                    "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
                    t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
@@ -210,10 +210,10 @@ script:
           uint32_t combined;
           if(datetimeRegister == "reglage_date_heure")
             combined = (uint32_t)id(reglage_date_heure).state;
-          else if(datetimeRegister == "vacance_debut")
-            combined = (uint32_t)id(vacance_debut).state;
-          else if(datetimeRegister == "vacance_fin")
-            combined = (uint32_t)id(vacance_fin).state;
+          else if(datetimeRegister == "vacances_debut")
+            combined = (uint32_t)id(vacances_debut).state;
+          else if(datetimeRegister == "vacances_fin")
+            combined = (uint32_t)id(vacances_fin).state;
           // Validate we have data
           if (combined == 0) {
             ESP_LOGW("update_datetime_from_FAT", "No data at address %s", datetimeRegister);
