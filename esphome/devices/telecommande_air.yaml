@@ -148,7 +148,7 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          ESPTime t = id(FATRegister.c_str()).state_as_esp_time();
+          ESPTime t = id(FATRegister).state_as_esp_time();
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
@@ -184,7 +184,7 @@ script:
           // Combine into uint32_t
           uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
           // Publish
-          id(datetimeRegister.c_str()).publish_state(datetime_encoded);
+          id(datetimeRegister).publish_state(datetime_encoded);
           ESP_LOGD("update_FAT_from_datetime", 
                    "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
                    t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
@@ -196,7 +196,7 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          uint32_t combined = (uint32_t)id(datetimeRegister.c_str()).state;
+          uint32_t combined = (uint32_t)id(datetimeRegister).state;
           // Validate we have data
           if (combined == 0) {
             ESP_LOGW("update_datetime_from_FAT", "No data at address %s", datetimeRegister);
@@ -242,7 +242,7 @@ script:
           t.hour = hour;
           t.minute = minute;
           t.second = second;
-          id(FATRegister.c_str()).publish_state(t);
+          id(FATRegister).publish_state(t);
           ESP_LOGD("update_datetime_from_FAT", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, combined);
