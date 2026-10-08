@@ -5,8 +5,8 @@ esphome:
           id: mode_test
           option: "Aucun"
       - lambda: |-
-          id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
-          id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
+          id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
+          id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
 
 api:
   actions:
@@ -60,6 +60,17 @@ api:
           
           ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)",
                    prog.c_str(), regs.size(), start_address);
+
+globals:
+  - id: last_test_index
+    type: int
+    restore_value: no
+    initial_value: '-1'
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: "Europe/Paris"
 
 script:
   - id: update_mode_air_telecommande
@@ -192,6 +203,8 @@ script:
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
           // Combine into uint32_t
           uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
+          // Apply timezone shift
+          datetime_encoded -= homeassistant_time.get_timezone_offset();
           // Publish
           if(ModbusRegister == "registre_16_telecommande")
             id(registre_16_telecommande).publish_state(datetime_encoded);
@@ -222,6 +235,8 @@ script:
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
             return;
           }
+          // Apply timezone shift
+          combined += homeassistant_time.get_timezone_offset();
           uint16_t date_reg = combined >> 16;
           uint16_t time_reg = combined & 0xFFFF;
           // Decode with validation
@@ -280,17 +295,6 @@ script:
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, combined);
-
-globals:
-  - id: last_test_index
-    type: int
-    restore_value: no
-    initial_value: '-1'
-
-time:
-  - platform: homeassistant
-    id: homeassistant_time
-    timezone: "Europe/Paris" 
 
 uart:
   - id: U2
@@ -1475,14 +1479,6 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-start-outline
     entity_category: config
-    update_interval: 24h # Pour ne se mettre à jour qu'une fois par jour
-    lambda: |-
-      id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
-      return id(vacances_debut).state_as_esptime();
-    set_action:
-      then:
-        - lambda: |-
-            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
   # Registre 31010
   - platform: template
     name: "Vacances fin"
@@ -1490,14 +1486,6 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-end-outline
     entity_category: config
-    update_interval: 24h # Pour ne se mettre à jour qu'une fois par jour
-    lambda: |-
-      id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
-      return id(vacances_fin).state_as_esptime();
-    set_action:
-      then:
-        - lambda: |-
-            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
 
 select:
   # Registre 21000
@@ -1642,10 +1630,10 @@ switch:
     turn_off_action:
       - lambda: |-
           auto call = id(registre_31008_telecommande).make_call();
-          call.set_value(0);
+          call.set_value(uint32_t(0));
           call.perform();
           auto call2 = id(registre_31010_telecommande).make_call();
-          call2.set_value(0);
+          call2.set_value(uint32_t(0));
           call2.perform();
   - platform: template
     id: hors_gel
@@ -1658,15 +1646,15 @@ switch:
             id(vacances).turn_off();
             id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
             auto call = id(registre_31010_telecommande).make_call();
-            call.set_value(0);
+            call.set_value(uint32_t(0));
             call.perform();
     turn_off_action:
       - lambda: |-
           auto call = id(registre_31008_telecommande).make_call();
-          call.set_value(0);
+          call.set_value(uint32_t(0));
           call.perform();
           auto call2 = id(registre_31010_telecommande).make_call();
-          call2.set_value(0);
+          call2.set_value(uint32_t(0));
           call2.perform();
 
 # Example configuration entry
