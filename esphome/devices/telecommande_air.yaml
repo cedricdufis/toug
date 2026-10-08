@@ -1476,7 +1476,6 @@ datetime:
     icon: mdi:calendar-start-outline
     entity_category: config
     update_interval: never # Pour ne prendre la valeur qu'au début
-    optimistic: true
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
       return id(vacances_debut).state_as_esptime();
@@ -1488,7 +1487,6 @@ datetime:
     icon: mdi:calendar-end-outline
     entity_category: config
     update_interval: never # Pour ne prendre la valeur qu'au début
-    optimistic: true
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
       return id(vacances_fin).state_as_esptime();
