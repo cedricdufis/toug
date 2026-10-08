@@ -202,20 +202,20 @@ script:
           // Note: Seconds stored in 2-second steps (0-29 representing 0-58s)
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
           // Combine into uint32_t
-          uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
+          uint32_t FATdatetime = ((uint32_t)date_reg << 16) | time_reg;
           // Apply timezone shift
-          datetime_encoded -= 7200;
+          FATdatetime += 7200;
           // Publish
           if(ModbusRegister == "registre_16_telecommande")
-            id(registre_16_telecommande).publish_state(datetime_encoded);
+            id(registre_16_telecommande).publish_state(FATdatetime);
           else if(ModbusRegister == "registre_31008_telecommande")
-            id(registre_31008_telecommande).publish_state(datetime_encoded);
+            id(registre_31008_telecommande).publish_state(FATdatetime);
           else if(ModbusRegister == "registre_31010_telecommande")
-            id(registre_31010_telecommande).publish_state(datetime_encoded);
+            id(registre_31010_telecommande).publish_state(FATdatetime);
           ESP_LOGD("update_modbus_from_datetime", 
                    "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
                    t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
-                   datetime_encoded);
+                   FATdatetime);
   - id: update_datetime_from_modbus
     mode: parallel
     parameters:
@@ -223,22 +223,22 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          uint32_t combined;
+          uint32_t FATdatetime;
           if(ModbusRegister == "registre_16_telecommande")
-            combined = (uint32_t)id(registre_16_telecommande).state;
+            FATdatetime = (uint32_t)id(registre_16_telecommande).state;
           else if(ModbusRegister == "registre_31008_telecommande")
-            combined = (uint32_t)id(registre_31008_telecommande).state;
+            FATdatetime = (uint32_t)id(registre_31008_telecommande).state;
           else if(ModbusRegister == "registre_31010_telecommande")
-            combined = (uint32_t)id(registre_31010_telecommande).state;
+            FATdatetime = (uint32_t)id(registre_31010_telecommande).state;
           // Validate we have data
-          if (combined == 0) {
+          if (FATdatetime == 0) {
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
             return;
           }
           // Apply timezone shift
-          combined += 7200;
-          uint16_t date_reg = combined >> 16;
-          uint16_t time_reg = combined & 0xFFFF;
+          FATdatetime -= 7200;
+          uint16_t date_reg = FATdatetime >> 16;
+          uint16_t time_reg = FATdatetime & 0xFFFF;
           // Decode with validation
           uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
           uint8_t month = (date_reg >> 5) & 0x0F;
