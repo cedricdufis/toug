@@ -149,18 +149,12 @@ script:
     then:
       - lambda: |-
           ESPTime t;
-          if(datetimeRegister == "reglage_date_heure") {
-            auto call_reglage_date_heure = id(reglage_date_heure).make_call();
-            t = id(call_reglage_date_heure).state_as_esp_time();
-          }
-          else if(datetimeRegister == "vacances_debut") {
-            auto call_vacances_debut = id(vacances_debut).make_call();
-            t = id(call_vacances_debut).state_as_esp_time();
-          }
-          else if(datetimeRegister == "vacances_fin") {
-            auto call_vacances_fin = id(vacances_fin).make_call();
-            t = id(call_vacances_fin).state_as_esp_time();
-          }
+          if(datetimeRegister == "reglage_date_heure")
+            t = id(reglage_date_heure).state_as_esptime();
+          else if(datetimeRegister == "vacances_debut")
+            t = id(vacances_debut).state_as_esptime();
+          else if(datetimeRegister == "vacances_fin")
+            t = id(vacances_fin).state_as_esptime();
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
