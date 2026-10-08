@@ -1479,6 +1479,7 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-start-outline
     entity_category: config
+    optimistic: true
   # Registre 31010
   - platform: template
     name: "Vacances fin"
@@ -1486,6 +1487,7 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:calendar-end-outline
     entity_category: config
+    optimistic: true
 
 select:
   # Registre 21000
