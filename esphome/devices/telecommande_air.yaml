@@ -1604,10 +1604,10 @@ switch:
             id(update_FAT_from_datetime).execute(std::string(registre_31010_telecommande), std::string(vacances_fin));
     turn_off_action:
       - lambda: |-
-          auto call = id(vacances_debut).make_call();
+          auto call = id(registre_31008_telecommande).make_call();
           call.set_value(0);
           call.perform();
-          auto call = id(vacances_fin).make_call();
+          auto call = id(registre_31010_telecommande).make_call();
           call.set_value(0);
           call.perform();
   - platform: template
@@ -1620,15 +1620,15 @@ switch:
       - lambda: |-
             id(vacances).turn_off();
             id(update_FAT_from_datetime).execute(std::string(registre_31008_telecommande), std::string(vacances_debut));
-            auto call = id(vacances_fin).make_call();
+            auto call = id(registre_31010_telecommande).make_call();
             call.set_value(0);
             call.perform();
     turn_off_action:
       - lambda: |-
-          auto call = id(vacances_debut).make_call();
+          auto call = id(registre_31008_telecommande).make_call();
           call.set_value(0);
           call.perform();
-          auto call = id(vacances_fin).make_call();
+          auto call = id(registre_31010_telecommande).make_call();
           call.set_value(0);
           call.perform();
 
