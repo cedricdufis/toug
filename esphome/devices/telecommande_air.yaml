@@ -141,43 +141,43 @@ script:
             - logger.log:
                 format: "TEST : Timeout test sélectionné -> Annulation"
                 level: ERROR
-  - id: update_FAT_from_datetime
+  - id: update_modbus_from_datetime
     mode: parallel
     parameters:
-      FATRegister: string
+      ModbusRegister: string
       datetimeRegister: string
     then:
       - lambda: |-
           ESPTime t;
-          if(FATRegister == "registre_16_telecommande")
-            t = id(registre_16_telecommande).state_as_esp_time();
-          else if(FATRegister == "registre_31008_telecommande")
-            t = id(registre_31008_telecommande).state_as_esp_time();
-          else if(FATRegister == "registre_31010_telecommande")
-            t = id(registre_31010_telecommande).state_as_esp_time();
+          if(datetimeRegister == "reglage_date_heure")
+            t = id(reglage_date_heure).state_as_esp_time();
+          else if(datetimeRegister == "vacances_debut")
+            t = id(vacances_debut).state_as_esp_time();
+          else if(datetimeRegister == "vacances_fin")
+            t = id(vacances_fin).state_as_esp_time();
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
-            ESP_LOGE("update_FAT_from_datetime", 
+            ESP_LOGE("update_modbus_from_datetime", 
                      "Date %04d-%02d-%02d is before minimum (2016-01-01)",
                      t.year, t.month, t.day_of_month);
             return;
           }
           if (t.year > 2100) {
-            ESP_LOGE("update_FAT_from_datetime", 
+            ESP_LOGE("update_modbus_from_datetime", 
                      "Year %d exceeds maximum (2100)", t.year);
             return;
           }
           if (t.month < 1 || t.month > 12) {
-            ESP_LOGE("update_FAT_from_datetime", "Invalid month: %d", t.month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid month: %d", t.month);
             return;
           }
           if (t.day_of_month < 1 || t.day_of_month > 31) {
-            ESP_LOGE("update_FAT_from_datetime", "Invalid day: %d", t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid day: %d", t.day_of_month);
             return;
           }
           if (t.hour > 23 || t.minute > 59 || t.second > 59) {
-            ESP_LOGE("update_FAT_from_datetime", 
+            ESP_LOGE("update_modbus_from_datetime", 
                      "Invalid time: %02d:%02d:%02d", t.hour, t.minute, t.second);
             return;
           }
@@ -190,56 +190,56 @@ script:
           // Combine into uint32_t
           uint32_t datetime_encoded = ((uint32_t)date_reg << 16) | time_reg;
           // Publish
-          if(datetimeRegister == "reglage_date_heure")
-            id(reglage_date_heure).publish_state(datetime_encoded);
-          else if(datetimeRegister == "vacances_debut")
-            id(vacances_debut).publish_state(datetime_encoded);
-          else if(datetimeRegister == "vacances_fin")
-            id(vacances_fin).publish_state(datetime_encoded);
-          ESP_LOGD("update_FAT_from_datetime", 
+          if(ModbusRegister == "registre_16_telecommande")
+            id(registre_16_telecommande).publish_state(datetime_encoded);
+          else if(ModbusRegister == "registre_31008_telecommande")
+            id(registre_31008_telecommande).publish_state(datetime_encoded);
+          else if(ModbusRegister == "registre_31010_telecommande")
+            id(registre_31010_telecommande).publish_state(datetime_encoded);
+          ESP_LOGD("update_modbus_from_datetime", 
                    "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
                    t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
                    datetime_encoded);
-  - id: update_datetime_from_FAT
+  - id: update_datetime_from_modbus
     mode: parallel
     parameters:
-      FATRegister: string
+      ModbusRegister: string
       datetimeRegister: string
     then:
       - lambda: |-
           uint32_t combined;
-          if(datetimeRegister == "reglage_date_heure")
-            combined = (uint32_t)id(reglage_date_heure).state;
-          else if(datetimeRegister == "vacances_debut")
-            combined = (uint32_t)id(vacances_debut).state;
-          else if(datetimeRegister == "vacances_fin")
-            combined = (uint32_t)id(vacances_fin).state;
+          if(ModbusRegister == "registre_16_telecommande")
+            combined = (uint32_t)id(registre_16_telecommande).state;
+          else if(ModbusRegister == "registre_31008_telecommande")
+            combined = (uint32_t)id(registre_31008_telecommande).state;
+          else if(ModbusRegister == "registre_31010_telecommande")
+            combined = (uint32_t)id(registre_31010_telecommande).state;
           // Validate we have data
           if (combined == 0) {
-            ESP_LOGW("update_datetime_from_FAT", "No data at address %s", datetimeRegister);
+            ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
             return;
           }
           // Check minimum date: 2016-01-01
           if (year < 2016) {
-            ESP_LOGE("update_datetime_from_FAT", 
+            ESP_LOGE("update_datetime_from_modbus", 
                      "Decoded date %04d-%02d-%02d is before minimum (2016-01-01)",
                      year, month, day);
             return;
           }
           if (year > 2100) {
-            ESP_LOGE("update_datetime_from_FAT", "Year %d exceeds maximum (2100)", year);
+            ESP_LOGE("update_datetime_from_modbus", "Year %d exceeds maximum (2100)", year);
             return;
           }
           if (month < 1 || month > 12) {
-            ESP_LOGE("update_datetime_from_FAT", "Invalid month: %d", month);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid month: %d", month);
             return;
           }
           if (day < 1 || day > 31) {
-            ESP_LOGE("update_datetime_from_FAT", "Invalid day: %d", day);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid day: %d", day);
             return;
           }
           if (hour > 23 || minute > 59 || second > 59) {
-            ESP_LOGE("update_datetime_from_FAT", 
+            ESP_LOGE("update_datetime_from_modbus", 
                      "Invalid time: %02d:%02d:%02d", hour, minute, second);
             return;
           }
@@ -259,13 +259,13 @@ script:
           t.hour = hour;
           t.minute = minute;
           t.second = second;
-          if(FATRegister == "registre_16_telecommande")
-            id(registre_16_telecommande).publish_state(t);
-          else if(FATRegister == "registre_31008_telecommande")
-            id(registre_31008_telecommande).publish_state(t);
-          else if(FATRegister == "registre_31010_telecommande")
-            id(registre_31010_telecommande).publish_state(t);
-          ESP_LOGD("update_datetime_from_FAT", 
+          if(ModbusRegister == "reglage_date_heure")
+            id(reglage_date_heure).publish_state(t);
+          else if(ModbusRegister == "vacances_debut")
+            id(vacances_debut).publish_state(t);
+          else if(ModbusRegister == "vacances_fin")
+            id(vacances_fin).publish_state(t);
+          ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, combined);
 
@@ -1449,12 +1449,12 @@ datetime:
     icon: mdi:clock-edit
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute("registre_16_telecommande", "reglage_date_heure");
+      id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
       return id(reglage_date_heure).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
+            id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
   # Registre 31008
   - platform: template
     name: "Vacances début"
@@ -1463,12 +1463,12 @@ datetime:
     icon: mdi:calendar-start-outline
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute("registre_31008_telecommande", "vacances_debut");
+      id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
       return id(vacances_debut).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
+            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
   # Registre 31010
   - platform: template
     name: "Vacances fin"
@@ -1477,12 +1477,12 @@ datetime:
     icon: mdi:calendar-end-outline
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute("registre_31010_telecommande", "vacances_fin");
+      id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
       return id(vacances_fin).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
+            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
 
 select:
   # Registre 21000
@@ -1622,16 +1622,16 @@ switch:
     turn_on_action:
       - lambda: |-
             id(hors_gel).turn_off();
-            id(update_FAT_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
-            id(update_FAT_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
+            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
+            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
     turn_off_action:
       - lambda: |-
           auto call = id(registre_31008_telecommande).make_call();
           call.set_value(0);
           call.perform();
-          auto call = id(registre_31010_telecommande).make_call();
-          call.set_value(0);
-          call.perform();
+          auto call2 = id(registre_31010_telecommande).make_call();
+          call2.set_value(0);
+          call2.perform();
   - platform: template
     id: hors_gel
     name: "Hors-gel"
@@ -1641,7 +1641,7 @@ switch:
     turn_on_action:
       - lambda: |-
             id(vacances).turn_off();
-            id(update_FAT_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
+            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
             auto call = id(registre_31010_telecommande).make_call();
             call.set_value(0);
             call.perform();
@@ -1650,9 +1650,9 @@ switch:
           auto call = id(registre_31008_telecommande).make_call();
           call.set_value(0);
           call.perform();
-          auto call = id(registre_31010_telecommande).make_call();
-          call.set_value(0);
-          call.perform();
+          auto call2 = id(registre_31010_telecommande).make_call();
+          call2.set_value(0);
+          call2.perform();
 
 # Example configuration entry
 light:
