@@ -1427,12 +1427,12 @@ datetime:
     icon: mdi:clock-edit
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute(registre_16_telecommande, reglage_date_heure);
+      id(update_datetime_from_FAT).execute(std::string(registre_16_telecommande), std::string(reglage_date_heure));
       return id(reglage_date_heure).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute(registre_16_telecommande, reglage_date_heure);
+            id(update_FAT_from_datetime).execute(std::string(registre_16_telecommande), std::string(reglage_date_heure));
   # Registre 31008
   - platform: template
     name: "Vacances début"
@@ -1441,12 +1441,12 @@ datetime:
     icon: mdi:calendar-start-outline
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute(registre_31008_telecommande, vacances_debut);
+      id(update_datetime_from_FAT).execute(std::string(registre_31008_telecommande), std::string(vacances_debut));
       return id(vacances_debut).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
+            id(update_FAT_from_datetime).execute(std::string(registre_31008_telecommande), std::string(vacances_debut));
   # Registre 31010
   - platform: template
     name: "Vacances fin"
@@ -1455,12 +1455,12 @@ datetime:
     icon: mdi:calendar-end-outline
     entity_category: config
     lambda: |-
-      id(update_datetime_from_FAT).execute(registre_31010_telecommande, vacances_fin);
+      id(update_datetime_from_FAT).execute(std::string(registre_31010_telecommande), std::string(vacances_fin));
       return id(vacances_fin).state_as_esptime();
     set_action:
       then:
         - lambda: |-
-            id(update_FAT_from_datetime).execute(registre_31010_telecommande, vacances_fin);
+            id(update_FAT_from_datetime).execute(std::string(registre_31010_telecommande), std::string(vacances_fin));
 
 select:
   # Registre 21000
@@ -1600,8 +1600,8 @@ switch:
     turn_on_action:
       - lambda: |-
             id(hors_gel).turn_off();
-            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
-            id(update_FAT_from_datetime).execute(registre_31010_telecommande, vacances_fin);
+            id(update_FAT_from_datetime).execute(std::string(registre_31008_telecommand), std::string(vacances_debut));
+            id(update_FAT_from_datetime).execute(std::string(registre_31010_telecommande), std::string(vacances_fin));
     turn_off_action:
       - lambda: |-
           auto call = id(vacances_debut).make_call();
@@ -1619,7 +1619,7 @@ switch:
     turn_on_action:
       - lambda: |-
             id(vacances).turn_off();
-            id(update_FAT_from_datetime).execute(registre_31008_telecommande, vacances_debut);
+            id(update_FAT_from_datetime).execute(std::string(registre_31008_telecommande), std::string(vacances_debut));
             auto call = id(vacances_fin).make_call();
             call.set_value(0);
             call.perform();
