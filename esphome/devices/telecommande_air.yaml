@@ -259,11 +259,11 @@ script:
           t.hour = hour;
           t.minute = minute;
           t.second = second;
-          if(ModbusRegister == "reglage_date_heure")
+          if(datetimeRegister == "reglage_date_heure")
             id(reglage_date_heure).publish_state(t);
-          else if(ModbusRegister == "vacances_debut")
+          else if(datetimeRegister == "vacances_debut")
             id(vacances_debut).publish_state(t);
-          else if(ModbusRegister == "vacances_fin")
+          else if(datetimeRegister == "vacances_fin")
             id(vacances_fin).publish_state(t);
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
