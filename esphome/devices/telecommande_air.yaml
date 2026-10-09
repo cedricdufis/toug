@@ -1473,7 +1473,10 @@ datetime:
     set_action:
       then:
         - lambda: |-
-            id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
+            // S'assure que la date/heure n'est pas nulle avant de mettre à jour le Modbus
+            if (x.timestamp != 0) {
+              id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
+            }
   # Registre 31008
   - platform: template
     name: "Vacances début"
