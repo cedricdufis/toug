@@ -247,17 +247,26 @@ script:
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
           // Combine into uint32_t
           uint32_t FATdatetime = ((uint32_t)date_reg << 16) | time_reg;
-          // Publish
-          if(ModbusRegister == "registre_16_telecommande")
-            id(registre_16_telecommande).publish_state(FATdatetime);
-          else if(ModbusRegister == "registre_31008_telecommande")
-            id(registre_31008_telecommande).publish_state(FATdatetime);
-          else if(ModbusRegister == "registre_31010_telecommande")
-            id(registre_31010_telecommande).publish_state(FATdatetime);
-          ESP_LOGD("update_modbus_from_datetime", 
-                   "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X",
-                   t.year, t.month, t.day_of_month, t.hour, t.minute, t.second,
-                   FATdatetime);
+          // Write to Modbus device
+          if(ModbusRegister == "registre_16_telecommande") {
+            auto call_16 = id(registre_16_telecommande).make_call();
+            call_16.set_value(FATdatetime);
+            call_16.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+          }
+          else if(ModbusRegister == "registre_31008_telecommande") {
+            auto call_31008 = id(registre_31008_telecommande).make_call();
+            call_31008.set_value(FATdatetime);
+            call_31008.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+          }
+          else if(ModbusRegister == "registre_31010_telecommande") {
+            auto call_31010 = id(registre_31010_telecommande).make_call();
+            call_31010.set_value(FATdatetime);
+            call_31010.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08X", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+          }
+          
   - id: update_datetime_from_modbus
     mode: parallel
     parameters:
@@ -310,31 +319,25 @@ script:
                      "Invalid time: %02d:%02d:%02d", hour, minute, second);
             return;
           }
-          ESPTime t;
-          t.year = year;
-          t.month = month;
-          t.day_of_month = day;
-          t.hour = hour;
-          t.minute = minute;
-          t.second = second;
           if(datetimeRegister == "reglage_date_heure") {
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X", year, month, day, hour, minute, second, FATdatetime);
           }
-          ESP_LOGD("update_datetime_from_modbus", 
-                   "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
-                   year, month, day, hour, minute, second, FATdatetime);
+          
 
 binary_sensor:
   - platform: template
