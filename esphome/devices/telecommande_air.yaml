@@ -1466,6 +1466,7 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:clock-edit
     entity_category: config
+    update_interval: 10s
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
       return id(reglage_date_heure).state_as_esptime();
