@@ -4,6 +4,7 @@ esphome:
       - select.set:
           id: mode_test
           option: "Aucun"
+      # Attendre 60 secondes avant de mettre à jour le début et la fin des vacances depuis le Modbus
       - delay: 60s
       - lambda: |-
           id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
@@ -72,6 +73,30 @@ time:
   - platform: homeassistant
     id: homeassistant_time
     timezone: "Europe/Paris"
+
+interval:
+  - interval: 30s
+    then:
+      - lambda: |-
+          // S'assure que la date/heure n'est pas nulle et que les vacances/hors-gel sont activées avant de mettre à jour le Modbus toutes les 30 secondes, sinon remet les registres à zéro
+          ESPTime t_debut = id(vacances_debut).state_as_esptime();
+          if ((id(vacances).state == true || id(hors_gel).state == true ) && t_debut.year != 0 && t_debut.month != 0 && t_debut.day != 0 && t_debut.hour != 0 && t_debut.minute != 0 && t_debut.second != 0) {
+            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
+          }
+          else {
+            auto call_31008 = id(registre_31008_telecommande).make_call();
+            call_31008.set_value(uint32_t(0));
+            call_31008.perform();
+          }
+          ESPTime t_fin = id(vacances_fin).state_as_esptime();
+          if ((id(vacances).state == true) && t_fin.year != 0 && t_fin.month != 0 && t_fin.day != 0 && t_fin.hour != 0 && t_fin.minute != 0 && t_fin.second != 0) {
+            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
+          }
+          else {
+            auto call_31010 = id(registre_31010_telecommande).make_call();
+            call_31010.set_value(uint32_t(0));
+            call_31010.perform();
+          }
 
 script:
   - id: update_mode_air_telecommande
@@ -320,33 +345,27 @@ binary_sensor:
     id: status_vacances
     name: "Status vacances"
     icon: mdi:beach
-    device_class: presence
+    device_class: light
     lambda: |-
-      float t_deb = id(registre_31008_telecommande).state;
-      float t_fin = id(registre_31010_telecommande).state;
-      float t_now = id(registre_16_telecommande).state;
-      if (std::isnan(t_deb) || std::isnan(t_fin) || t_deb == 0 || t_fin == 0)
+      uint32_t t_deb = id(registre_31008_telecommande).state;
+      uint32_t t_fin = id(registre_31010_telecommande).state;
+      uint32_t t_now = id(registre_16_telecommande).state;
+      if (t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
         return false;
-      if (t_now <= t_deb || t_fin <= t_now)
-        return false;
-      if (t_fin <= t_deb)
-        return false;
+      }
       return true;
   - platform: template
     id: status_hors_gel
     name: "Status hors-gel"
     icon: mdi:snowflake
-    device_class: presence
+    device_class: light
     lambda: |-
-      float t_deb = id(registre_31008_telecommande).state;
-      float t_fin = id(registre_31010_telecommande).state;
-      float t_now = id(registre_16_telecommande).state;
-      if (std::isnan(t_deb) || std::isnan(t_fin) || t_deb == 0 || t_fin != 0)
+      uint32_t t_deb = id(registre_31008_telecommande).state;
+      uint32_t t_fin = id(registre_31010_telecommande).state;
+      uint32_t t_now = id(registre_16_telecommande).state;
+      if (t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
         return false;
-      if (t_fin <= t_now)
-        return false;
-      if (t_fin <= t_deb)
-        return false;
+      }
       return true;
   # Registre 131
   - platform: modbus_controller
@@ -1466,7 +1485,7 @@ datetime:
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:clock-edit
     entity_category: config
-    update_interval: 10s
+    update_interval: 30s
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
       return id(reglage_date_heure).state_as_esptime();
@@ -1474,7 +1493,7 @@ datetime:
       then:
         - lambda: |-
             // S'assure que la date/heure n'est pas nulle avant de mettre à jour le Modbus
-            if (x.timestamp != 0) {
+            if (x.year != 0 && x.month != 0 && x.day != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
               id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
             }
   # Registre 31008
@@ -1628,41 +1647,19 @@ switch:
     name: "Vacances"
     icon: mdi:beach
     entity_category: config
-    restore_mode: DISABLED
+    restore_mode: ALWAYS_OFF
     turn_on_action:
       - lambda: |-
             id(hors_gel).turn_off();
-            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
-            id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
-    turn_off_action:
-      - lambda: |-
-          auto call = id(registre_31008_telecommande).make_call();
-          call.set_value(uint32_t(0));
-          call.perform();
-          auto call2 = id(registre_31010_telecommande).make_call();
-          call2.set_value(uint32_t(0));
-          call2.perform();
   - platform: template
     id: hors_gel
     name: "Hors-gel"
     icon: mdi:snowflake
     entity_category: config
-    restore_mode: DISABLED
+    restore_mode: ALWAYS_OFF
     turn_on_action:
       - lambda: |-
             id(vacances).turn_off();
-            id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
-            auto call = id(registre_31010_telecommande).make_call();
-            call.set_value(uint32_t(0));
-            call.perform();
-    turn_off_action:
-      - lambda: |-
-          auto call = id(registre_31008_telecommande).make_call();
-          call.set_value(uint32_t(0));
-          call.perform();
-          auto call2 = id(registre_31010_telecommande).make_call();
-          call2.set_value(uint32_t(0));
-          call2.perform();
 
 # Example configuration entry
 light:
