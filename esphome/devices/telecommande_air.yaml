@@ -80,7 +80,7 @@ interval:
       - lambda: |-
           // S'assure que la date/heure n'est pas nulle et que les vacances/hors-gel sont activées avant de mettre à jour le Modbus toutes les 30 secondes, sinon remet les registres à zéro
           ESPTime t_debut = id(vacances_debut).state_as_esptime();
-          if ((id(vacances).state == true || id(hors_gel).state == true ) && t_debut.year != 0 && t_debut.month != 0 && t_debut.day != 0 && t_debut.hour != 0 && t_debut.minute != 0 && t_debut.second != 0) {
+          if ((id(vacances).state == true || id(hors_gel).state == true ) && t_debut.year != 0 && t_debut.month != 0 && t_debut.day_of_month != 0 && t_debut.hour != 0 && t_debut.minute != 0 && t_debut.second != 0) {
             id(update_modbus_from_datetime).execute("registre_31008_telecommande", "vacances_debut");
           }
           else {
@@ -89,7 +89,7 @@ interval:
             call_31008.perform();
           }
           ESPTime t_fin = id(vacances_fin).state_as_esptime();
-          if ((id(vacances).state == true) && t_fin.year != 0 && t_fin.month != 0 && t_fin.day != 0 && t_fin.hour != 0 && t_fin.minute != 0 && t_fin.second != 0) {
+          if ((id(vacances).state == true) && t_fin.year != 0 && t_fin.month != 0 && t_fin.day_of_month != 0 && t_fin.hour != 0 && t_fin.minute != 0 && t_fin.second != 0) {
             id(update_modbus_from_datetime).execute("registre_31010_telecommande", "vacances_fin");
           }
           else {
@@ -1489,7 +1489,7 @@ datetime:
       then:
         - lambda: |-
             // S'assure que la date/heure n'est pas nulle avant de mettre à jour le Modbus
-            if (x.year != 0 && x.month != 0 && x.day != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
+            if (x.year != 0 && x.month != 0 && x.day_of_month != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
               id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
             }
   # Registre 31008
