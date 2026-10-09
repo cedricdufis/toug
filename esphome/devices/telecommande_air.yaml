@@ -229,8 +229,6 @@ script:
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
           // Combine into uint32_t
           uint32_t FATdatetime = ((uint32_t)date_reg << 16) | time_reg;
-          // Apply timezone shift
-          FATdatetime += 7200;
           // Publish
           if(ModbusRegister == "registre_16_telecommande")
             id(registre_16_telecommande).publish_state(FATdatetime);
@@ -249,20 +247,18 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          uint32_t FATdatetime;
+          uint32_t FATdatetime = 0;
           if(ModbusRegister == "registre_16_telecommande")
-            FATdatetime = (uint32_t)id(registre_16_telecommande).state;
+            FATdatetime = id(registre_16_telecommande).state;
           else if(ModbusRegister == "registre_31008_telecommande")
-            FATdatetime = (uint32_t)id(registre_31008_telecommande).state;
+            FATdatetime = id(registre_31008_telecommande).state;
           else if(ModbusRegister == "registre_31010_telecommande")
-            FATdatetime = (uint32_t)id(registre_31010_telecommande).state;
+            FATdatetime = id(registre_31010_telecommande).state;
           // Validate we have data
-          if (FATdatetime == 0) {
+          if (FATdatetime == 0 || std::isnan(FATdatetime)) {
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
             return;
           }
-          // Apply timezone shift
-          FATdatetime -= 7200;
           uint16_t date_reg = FATdatetime >> 16;
           uint16_t time_reg = FATdatetime & 0xFFFF;
           // Decode with validation
@@ -350,7 +346,7 @@ binary_sensor:
       uint32_t t_deb = id(registre_31008_telecommande).state;
       uint32_t t_fin = id(registre_31010_telecommande).state;
       uint32_t t_now = id(registre_16_telecommande).state;
-      if (t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
+      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
         return false;
       }
       return true;
@@ -363,7 +359,7 @@ binary_sensor:
       uint32_t t_deb = id(registre_31008_telecommande).state;
       uint32_t t_fin = id(registre_31010_telecommande).state;
       uint32_t t_now = id(registre_16_telecommande).state;
-      if (t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
+      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
         return false;
       }
       return true;
