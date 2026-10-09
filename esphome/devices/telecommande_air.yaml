@@ -4,6 +4,7 @@ esphome:
       - select.set:
           id: mode_test
           option: "Aucun"
+      - delay: 60s
       - lambda: |-
           id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
           id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
