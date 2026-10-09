@@ -10,6 +10,24 @@ esphome:
           id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
           id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
 
+uart:
+  - id: U2
+    tx_pin: GPIO14
+    rx_pin: GPIO15
+    baud_rate: 19200
+    parity: EVEN
+    stop_bits: 1
+
+modbus:
+  - id: modbus2
+    uart_id: U2
+
+modbus_controller:
+  - address: 0x0001
+    id: modbus_telecommande
+    update_interval: 15s
+    modbus_id: modbus2
+
 api:
   actions:
     - action: change_prog
@@ -317,24 +335,6 @@ script:
           ESP_LOGD("update_datetime_from_modbus", 
                    "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08X",
                    year, month, day, hour, minute, second, FATdatetime);
-
-uart:
-  - id: U2
-    tx_pin: GPIO14
-    rx_pin: GPIO15
-    baud_rate: 19200
-    parity: EVEN
-    stop_bits: 1
-
-modbus:
-  - id: modbus2
-    uart_id: U2
-
-modbus_controller:
-  - address: 0x0001
-    id: modbus_telecommande
-    update_interval: 10s
-    modbus_id: modbus2
 
 binary_sensor:
   - platform: template
