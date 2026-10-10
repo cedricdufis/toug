@@ -207,12 +207,15 @@ script:
     then:
       - lambda: |-
           ESPTime t;
-          if(datetimeRegister == "reglage_date_heure")
+          if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
-          else if(datetimeRegister == "vacances_debut")
+          }
+          else if(datetimeRegister == "vacances_debut") {
             t = id(vacances_debut).state_as_esptime();
-          else if(datetimeRegister == "vacances_fin")
+          }
+          else if(datetimeRegister == "vacances_fin") {
             t = id(vacances_fin).state_as_esptime();
+          }
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
@@ -243,26 +246,33 @@ script:
           // [Hours (5b:15-11)][Minutes (6b:10-5)][Seconds/2 (5b:4-0)]
           // Note: Seconds stored in 2-second steps (0-29 representing 0-58s)
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
-          // Combine into uint32_t
-          uint32_t FATdatetime = ((uint32_t)date_reg << 16) | time_reg;
           // Write to Modbus device
           if(ModbusRegister == "registre_16_telecommande") {
             auto call_16 = id(registre_16_telecommande).make_call();
-            call_16.set_value(FATdatetime);
+            call_16.set_value(date_reg);
             call_16.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            auto call_17 = id(registre_16_telecommande).make_call();
+            call_17.set_value(time_reg);
+            call_17.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%04x 0x%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31008_telecommande") {
             auto call_31008 = id(registre_31008_telecommande).make_call();
-            call_31008.set_value(FATdatetime);
+            call_31008.set_value(date_reg);
             call_31008.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            auto call_31009 = id(registre_31009_telecommande).make_call();
+            call_31009.set_value(time_reg);
+            call_31009.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%04x 0x%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31010_telecommande") {
             auto call_31010 = id(registre_31010_telecommande).make_call();
-            call_31010.set_value(FATdatetime);
+            call_31010.set_value(date_reg);
             call_31010.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            auto call_31011 = id(registre_31011_telecommande).make_call();
+            call_31011.set_value(time_reg);
+            call_31011.perform();
+            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%04x 0x%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           
   - id: update_datetime_from_modbus
@@ -272,20 +282,25 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          uint32_t FATdatetime = 0;
-          if(ModbusRegister == "registre_16_telecommande")
-            FATdatetime = id(registre_16_telecommande).state;
-          else if(ModbusRegister == "registre_31008_telecommande")
-            FATdatetime = id(registre_31008_telecommande).state;
-          else if(ModbusRegister == "registre_31010_telecommande")
-            FATdatetime = id(registre_31010_telecommande).state;
+          uint16_t date_reg = 0;
+          uint16_t time_reg = 0;
+          if(ModbusRegister == "registre_16_telecommande") {
+            date_reg = (uint16_t)id(registre_16_telecommande).state;
+            time_reg = (uint16_t)id(registre_17_telecommande).state;
+          }
+          else if(ModbusRegister == "registre_31008_telecommande") {
+            date_reg = (uint16_t)id(registre_31008_telecommande).state;
+            time_reg = (uint16_t)id(registre_31009_telecommande).state;
+          }
+          else if(ModbusRegister == "registre_31010_telecommande") {
+            date_reg = (uint16_t)id(registre_31010_telecommande).state;
+            time_reg = (uint16_t)id(registre_31011_telecommande).state;
+          }
           // Validate we have data
-          if (FATdatetime == 0 || std::isnan(FATdatetime)) {
+          if (date_reg == 0 || std::isnan(date_reg) || time_reg == 0 || std::isnan(time_reg)) {
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
             return;
           }
-          uint16_t date_reg = FATdatetime >> 16;
-          uint16_t time_reg = FATdatetime & 0xFFFF;
           // Decode with validation
           uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
           uint8_t month = (date_reg >> 5) & 0x0F;
@@ -321,19 +336,19 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%04u 0x%04u", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%04u 0x%04u", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%04u 0x%04u", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           
 
@@ -1366,9 +1381,20 @@ number:
     # internal: true
     register_type: holding
     address: 16
-    value_type: U_DWORD
+    value_type: U_WORD
     min_value: 0
-    max_value: 4294967295
+    max_value: 65535
+  # Registre 17 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_17_telecommande
+    name: "Registre 17 interne"
+    # internal: true
+    register_type: holding
+    address: 17
+    value_type: U_WORD
+    min_value: 0
+    max_value: 65535
   # Registre 64
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1457,9 +1483,26 @@ number:
     # internal: true
     register_type: holding
     address: 31008
-    value_type: U_DWORD
+    value_type: U_WORD
     min_value: 0
-    max_value: 4294967295
+    max_value: 65535
+    on_value:
+      - lambda: |-
+          if (x == 0) {
+            id(vacances).turn_off();
+            id(hors_gel).turn_off();
+          }
+  # Registre 31009 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_31009_telecommande
+    name: "Registre 31009 interne"
+    # internal: true
+    register_type: holding
+    address: 31009
+    value_type: U_WORD
+    min_value: 0
+    max_value: 65535
     on_value:
       - lambda: |-
           if (x == 0) {
@@ -1474,9 +1517,25 @@ number:
     # internal: true
     register_type: holding
     address: 31010
-    value_type: U_DWORD
+    value_type: U_WORD
     min_value: 0
-    max_value: 4294967295
+    max_value: 65535
+    on_value:
+      - lambda: |-
+          if (x == 0) {
+            id(vacances).turn_off();
+          }
+  # Registre 31011 interne
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_31011_telecommande
+    name: "Registre 31011 interne"
+    # internal: true
+    register_type: holding
+    address: 31011
+    value_type: U_WORD
+    min_value: 0
+    max_value: 65535
     on_value:
       - lambda: |-
           if (x == 0) {
@@ -1484,7 +1543,6 @@ number:
           }
 
 datetime:
-  # Registre 16
   - platform: template
     name: "Réglage Date⁄Heure"
     id: reglage_date_heure
@@ -1502,7 +1560,6 @@ datetime:
             if (x.year != 0 && x.month != 0 && x.day_of_month != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
               id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
             }
-  # Registre 31008
   - platform: template
     name: "Vacances début"
     id: vacances_debut
@@ -1510,7 +1567,6 @@ datetime:
     icon: mdi:calendar-start-outline
     entity_category: config
     optimistic: true
-  # Registre 31010
   - platform: template
     name: "Vacances fin"
     id: vacances_fin
