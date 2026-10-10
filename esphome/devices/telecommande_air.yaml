@@ -216,9 +216,7 @@ script:
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
-            ESP_LOGE("update_modbus_from_datetime", 
-                     "Date %04d-%02d-%02d is before minimum (2016-01-01)",
-                     t.year, t.month, t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Date %04d-%02d-%02d is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
             return;
           }
           if (t.year > 2100) {
@@ -252,19 +250,19 @@ script:
             auto call_16 = id(registre_16_telecommande).make_call();
             call_16.set_value(FATdatetime);
             call_16.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08d", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
           }
           else if(ModbusRegister == "registre_31008_telecommande") {
             auto call_31008 = id(registre_31008_telecommande).make_call();
             call_31008.set_value(FATdatetime);
             call_31008.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08d", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
           }
           else if(ModbusRegister == "registre_31010_telecommande") {
             auto call_31010 = id(registre_31010_telecommande).make_call();
             call_31010.set_value(FATdatetime);
             call_31010.perform();
-            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08d", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
+            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04d-%02d-%02d %02d:%02d:%02d → 0x%08u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, FATdatetime);
           }
           
   - id: update_datetime_from_modbus
@@ -283,7 +281,7 @@ script:
             FATdatetime = id(registre_31010_telecommande).state;
           // Validate we have data
           if (FATdatetime == 0 || std::isnan(FATdatetime)) {
-            ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister);
+            ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
             return;
           }
           uint16_t date_reg = FATdatetime >> 16;
@@ -323,19 +321,19 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08d", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08d", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08d", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
           }
           
 
