@@ -461,7 +461,6 @@ text_sensor:
     # internal: true
     register_type: holding
     address: 16
-    mode: text
     response_size: 4
     raw_encode: NONE
   # Registre 51
@@ -582,7 +581,6 @@ text_sensor:
     # internal: true
     register_type: holding
     address: 31008
-    mode: text
     response_size: 4
     raw_encode: NONE
     on_value:
@@ -599,7 +597,6 @@ text_sensor:
     # internal: true
     register_type: holding
     address: 31010
-    mode: text
     response_size: 4
     raw_encode: NONE
     on_value:
