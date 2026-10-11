@@ -198,7 +198,7 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
-          ESPTime t;
+          ESPTime t = from_epoch_utc(0);
           if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
           }
