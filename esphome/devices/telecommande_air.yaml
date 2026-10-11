@@ -199,7 +199,6 @@ script:
     then:
       - lambda: |-
           ESPTime t;
-          t.from_epoch_utc(0);
           if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
           }
@@ -312,19 +311,19 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
 
 binary_sensor:
