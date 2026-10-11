@@ -28,6 +28,11 @@ modbus_controller:
     update_interval: 15s
     modbus_id: modbus2
 
+modbus_client:
+  - address: 0x0001
+    id: modbus_telecommande_async
+    modbus_id: modbus2
+
 api:
   actions:
     - action: change_prog
@@ -62,7 +67,7 @@ api:
             regs.push_back(value);
           }
           // --- 4) Création de la commande Modbus ---
-          id(modbus_telecommande).write_multiple_registers(start_address, regs);
+          id(modbus_telecommande_async).write_multiple_registers(start_address, regs);
           //auto pdu = modbus::helpers::create_write_registers_pdu(start_address, regs);
           // --- 5) Envoi ---
           //id(modbus_telecommande).queue_pdu(pdu);
