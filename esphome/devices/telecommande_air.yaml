@@ -337,7 +337,7 @@ binary_sensor:
     lambda: |-
       uint32_t t_deb = (uint32_t)std::stoul(id(registre_31008_telecommande).state);
       uint32_t t_fin = (uint32_t)std::stoul(id(registre_31010_telecommande).state);
-      uint32_t t_now = i(uint32_t)std::stoul(id(registre_16_telecommande).state);
+      uint32_t t_now = (uint32_t)std::stoul(id(registre_16_telecommande).state);
       if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
         return false;
       }
@@ -575,7 +575,7 @@ text_sensor:
     raw_encode: NONE
     on_value:
       - lambda: |-
-          if (x == 0) {
+          if (std::stoul(x) == 0) {
             id(vacances).turn_off();
             id(hors_gel).turn_off();
           }
@@ -591,7 +591,7 @@ text_sensor:
     raw_encode: NONE
     on_value:
       - lambda: |-
-          if (x == 0) {
+          if (std::stoul(x) == 0) {
             id(vacances).turn_off();
           }
   # Registre 31200
