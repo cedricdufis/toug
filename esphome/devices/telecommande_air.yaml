@@ -43,7 +43,6 @@ api:
           }
           // --- 2) Sélection de l’adresse en fonction du programme ---
           uint16_t start_address = 0;
-          
           if (prog == "A" || prog == "a")      start_address = 31200;
           else if (prog == "B" || prog == "b") start_address = 31214;
           else if (prog == "C" || prog == "c") start_address = 31228;
@@ -55,7 +54,6 @@ api:
           // --- 3) Conversion HEX → registres 16 bits ---
           std::vector<uint16_t> regs;
           regs.reserve(14);
-          
           for (int i = 0; i < 14; i++) {
             std::string b_high_str = dataset.substr(i*4,   2);
             std::string b_low_str  = dataset.substr(i*4+2, 2);
@@ -64,7 +62,7 @@ api:
             regs.push_back(value);
           }
           // --- 4) Création de la commande Modbus ---
-          modbus2->write_multiple_registers(start_address, regs);
+          id(modbus_telecommande).write_multiple_registers(start_address, regs);
           //auto pdu = modbus::helpers::create_write_registers_pdu(start_address, regs);
           // --- 5) Envoi ---
           //id(modbus_telecommande).queue_pdu(pdu);
