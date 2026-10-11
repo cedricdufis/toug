@@ -64,7 +64,7 @@ api:
             regs.push_back(value);
           }
           // --- 4) Création de la commande Modbus ---
-          modbus_telecommande->write_multiple_registers(start_address, regs);
+          modbus2->write_multiple_registers(start_address, regs);
           //auto pdu = modbus::helpers::create_write_registers_pdu(start_address, regs);
           // --- 5) Envoi ---
           //id(modbus_telecommande).queue_pdu(pdu);
