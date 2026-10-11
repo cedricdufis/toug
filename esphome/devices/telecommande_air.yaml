@@ -66,7 +66,7 @@ api:
           // --- 4) Création de la commande Modbus ---
           auto pdu = modbus::helpers::create_write_registers_pdu(start_address, regs);
           // --- 5) Envoi ---
-          id(modbus_telecommande).queue_pdu(pdu);
+          id(modbus2).queue_pdu(pdu);
           ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
 
 globals:
