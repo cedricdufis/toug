@@ -199,6 +199,12 @@ script:
     then:
       - lambda: |-
           ESPTime t;
+          t.year = 1970;
+          t.month = 1;
+          t.day_of_month = 1;
+          t.hour = 0;
+          t.minute = 0;
+          t.second = 0;
           if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
           }
