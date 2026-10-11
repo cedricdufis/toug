@@ -211,29 +211,29 @@ script:
           // Validate ESPTime is valid
           // Check minimum date: 2016-01-01
           if (t.year < 2016) {
-            ESP_LOGE("update_modbus_from_datetime", "Date %04d-%02d-%02d is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
             return;
           }
           if (t.year > 2100) {
             ESP_LOGE("update_modbus_from_datetime", 
-                     "Year %d exceeds maximum (2100)", t.year);
+                     "Year %04u exceeds maximum (2100)", t.year);
             return;
           }
           if (t.month < 1 || t.month > 12) {
-            ESP_LOGE("update_modbus_from_datetime", "Invalid month: %d", t.month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid month: %02u", t.month);
             return;
           }
           if (t.day_of_month < 1 || t.day_of_month > 31) {
-            ESP_LOGE("update_modbus_from_datetime", "Invalid day: %d", t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid day: %02u", t.day_of_month);
             return;
           }
           if (t.hour > 23 || t.minute > 59 || t.second > 59) {
             ESP_LOGE("update_modbus_from_datetime", 
-                     "Invalid time: %02d:%02d:%02d", t.hour, t.minute, t.second);
+                     "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
             return;
           }
           // [Year offset from 1980 (7b:15-9)][Month (4b:8-5)][Day (5b:4-0)]
-          uint16_t year_pac = (uint16_t)(t.year - 1980) & 0x7F;
+          uint16_t year_pac = (uint16_t) (t.year - 1980) & 0x7F;
           uint16_t date_reg = (year_pac << 9) | (t.month << 5) | t.day_of_month;
           // [Hours (5b:15-11)][Minutes (6b:10-5)][Seconds/2 (5b:4-0)]
           // Note: Seconds stored in 2-second steps (0-29 representing 0-58s)
@@ -245,15 +245,15 @@ script:
           regs.push_back((uint16_t) time_reg);
           if(ModbusRegister == "registre_16_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(16, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04u-%04u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31008_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31008, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04u-%04u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31010_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31010, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04u-%04u", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
   - id: update_datetime_from_modbus
     mode: parallel
@@ -264,11 +264,11 @@ script:
       - lambda: |-
           uint32_t FATdatetime = 0;
           if(ModbusRegister == "registre_16_telecommande")
-            FATdatetime = (uint32_t)std::stoul(id(registre_16_telecommande).state);
+            FATdatetime = (uint32_t) std::stoul(id(registre_16_telecommande).state);
           else if(ModbusRegister == "registre_31008_telecommande")
-            FATdatetime = (uint32_t)std::stoul(id(registre_31008_telecommande).state);
+            FATdatetime = (uint32_t) std::stoul(id(registre_31008_telecommande).state);
           else if(ModbusRegister == "registre_31010_telecommande")
-            FATdatetime = (uint32_t)std::stoul(id(registre_31010_telecommande).state);
+            FATdatetime = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
           // Validate we have data
           if (FATdatetime == 0 || std::isnan(FATdatetime)) {
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
@@ -286,44 +286,44 @@ script:
           // Check minimum date: 2016-01-01
           if (year < 2016) {
             ESP_LOGE("update_datetime_from_modbus", 
-                     "Decoded date %04d-%02d-%02d is before minimum (2016-01-01)",
+                     "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)",
                      year, month, day);
             return;
           }
           if (year > 2100) {
-            ESP_LOGE("update_datetime_from_modbus", "Year %d exceeds maximum (2100)", year);
+            ESP_LOGE("update_datetime_from_modbus", "Year %04u exceeds maximum (2100)", year);
             return;
           }
           if (month < 1 || month > 12) {
-            ESP_LOGE("update_datetime_from_modbus", "Invalid month: %d", month);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid month: %02u", month);
             return;
           }
           if (day < 1 || day > 31) {
-            ESP_LOGE("update_datetime_from_modbus", "Invalid day: %d", day);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid day: %02u", day);
             return;
           }
           if (hour > 23 || minute > 59 || second > 59) {
             ESP_LOGE("update_datetime_from_modbus", 
-                     "Invalid time: %02d:%02d:%02d", hour, minute, second);
+                     "Invalid time: %02u:%02u:%02u", hour, minute, second);
             return;
           }
           if(datetimeRegister == "reglage_date_heure") {
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04d-%02d-%02d %02d:%02d:%02d from 0x%08u", year, month, day, hour, minute, second, FATdatetime);
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%08x", year, month, day, hour, minute, second, FATdatetime);
           }
 
 binary_sensor:
@@ -333,9 +333,9 @@ binary_sensor:
     icon: mdi:beach
     device_class: light
     lambda: |-
-      uint32_t t_deb = (uint32_t)std::stoul(id(registre_31008_telecommande).state);
-      uint32_t t_fin = (uint32_t)std::stoul(id(registre_31010_telecommande).state);
-      uint32_t t_now = (uint32_t)std::stoul(id(registre_16_telecommande).state);
+      uint32_t t_deb = (uint32_t) std::stoul(id(registre_31008_telecommande).state);
+      uint32_t t_fin = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
+      uint32_t t_now = (uint32_t) std::stoul(id(registre_16_telecommande).state);
       if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
         return false;
       }
