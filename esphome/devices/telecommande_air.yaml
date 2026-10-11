@@ -41,7 +41,6 @@ api:
             ESP_LOGE("change_prog", "Dataset invalide (56 hexa attendus, reçu %d)", dataset.size());
             return;
           }
-          
           // --- 2) Sélection de l’adresse en fonction du programme ---
           uint16_t start_address = 0;
           
@@ -53,7 +52,6 @@ api:
             ESP_LOGE("change_prog", "Programme invalide : %s (attendu A/B/C/D)", prog.c_str());
             return;
           }
-          
           // --- 3) Conversion HEX → registres 16 bits ---
           std::vector<uint16_t> regs;
           regs.reserve(14);
@@ -61,25 +59,15 @@ api:
           for (int i = 0; i < 14; i++) {
             std::string b_high_str = dataset.substr(i*4,   2);
             std::string b_low_str  = dataset.substr(i*4+2, 2);
-          
             uint16_t value = ((uint16_t) strtol(b_high_str.c_str(), NULL, 16) << 8)
                              | (uint16_t) strtol(b_low_str.c_str(), NULL, 16);
             regs.push_back(value);
           }
-          
           // --- 4) Création de la commande Modbus ---
-          auto cmd = modbus::helpers::ModbusCommandItem::create_write_multiple_command(
-              modbus_telecommande,
-              start_address,
-              regs.size(),
-              regs
-          );
-          
+          auto pdu = modbus::helpers::create_write_registers_pdu(start_address, regs);
           // --- 5) Envoi ---
-          modbus_telecommande->queue_command(cmd);
-          
-          ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)",
-                   prog.c_str(), regs.size(), start_address);
+          id(modbus_telecommande).send_raw_pdu(1, pdu);
+          ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
 
 globals:
   - id: last_test_index
