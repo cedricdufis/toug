@@ -198,6 +198,7 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
+          // Déclarer et initialiser la variable pour éviter les warning à la compilation
           ESPTime t;
           t.year = 1970;
           t.month = 1;
@@ -205,6 +206,7 @@ script:
           t.hour = 0;
           t.minute = 0;
           t.second = 0;
+          // On prend la valeur du registre datetime correspondant
           if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
           }
@@ -214,8 +216,7 @@ script:
           else if(datetimeRegister == "vacances_fin") {
             t = id(vacances_fin).state_as_esptime();
           }
-          // Validate ESPTime is valid
-          // Check minimum date: 2016-01-01
+          // Validation de la variable ESPTime
           if (t.year < 2016) {
             ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
             return;
@@ -238,13 +239,13 @@ script:
                      "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
             return;
           }
-          // [Year offset from 1980 (7b:15-9)][Month (4b:8-5)][Day (5b:4-0)]
+          // [Offset de l'année 1980 (7b:15-9)][Mois (4b:8-5)][Jour (5b:4-0)]
           uint16_t year_pac = (uint16_t) (t.year - 1980) & 0x7F;
           uint16_t date_reg = (year_pac << 9) | (t.month << 5) | t.day_of_month;
-          // [Hours (5b:15-11)][Minutes (6b:10-5)][Seconds/2 (5b:4-0)]
-          // Note: Seconds stored in 2-second steps (0-29 representing 0-58s)
+          // [Heures (5b:15-11)][Minutes (6b:10-5)][Secondes/2 (5b:4-0)]
+          // Note: Secondes stockées par pas de 2 secondes (0-29 représentant 0-58s)
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
-          // Write to Modbus device
+          // Écriture dans le périphérique Modbus
           std::vector<uint16_t> regs;
           regs.reserve(2);
           regs.push_back((uint16_t) date_reg);
@@ -268,6 +269,7 @@ script:
       datetimeRegister: string
     then:
       - lambda: |-
+          // Lecture de la valeur du registre Modbus correspondant
           uint32_t FATdatetime = 0;
           if(ModbusRegister == "registre_16_telecommande")
             FATdatetime = (uint32_t) std::stoul(id(registre_16_telecommande).state);
@@ -275,21 +277,21 @@ script:
             FATdatetime = (uint32_t) std::stoul(id(registre_31008_telecommande).state);
           else if(ModbusRegister == "registre_31010_telecommande")
             FATdatetime = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
-          // Validate we have data
+          // Validation de la présence de données
           if (FATdatetime == 0 || std::isnan(FATdatetime)) {
             ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
             return;
           }
           uint16_t date_reg = FATdatetime >> 16;
           uint16_t time_reg = FATdatetime & 0xFFFF;
-          // Decode with validation
+          // Décodage avec validation
           uint16_t year = 1980 + ((date_reg >> 9) & 0x7F);
           uint8_t month = (date_reg >> 5) & 0x0F;
           uint8_t day = date_reg & 0x1F;
           uint8_t hour = (time_reg >> 11) & 0x1F;
           uint8_t minute = (time_reg >> 5) & 0x3F;
           uint8_t second = (time_reg & 0x1F) << 1;
-          // Check minimum date: 2016-01-01
+          // Validation de la variable ESPTime
           if (year < 2016) {
             ESP_LOGE("update_datetime_from_modbus", 
                      "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)",
@@ -313,6 +315,7 @@ script:
                      "Invalid time: %02u:%02u:%02u", hour, minute, second);
             return;
           }
+          // Mise à jour du registre datetime correspondant
           if(datetimeRegister == "reglage_date_heure") {
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
