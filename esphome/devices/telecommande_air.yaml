@@ -22,12 +22,14 @@ modbus:
   - id: modbus2
     uart_id: U2
 
+# Configuration du contrôleur Modbus qui fait un pooling toutes les 10 secondes
 modbus_controller:
   - address: 0x0001
     id: modbus_telecommande
-    update_interval: 15s
+    update_interval: 10s
     modbus_id: modbus2
 
+# Configuration du client Modbus asynchrone pour envoyer des commandes Modbus sans utiliser le contrôleur principal
 modbus_client:
   - address: 0x0001
     id: modbus_telecommande_async
@@ -80,6 +82,7 @@ time:
     id: homeassistant_time
     timezone: "Europe/Paris"
 
+# Intervalle pour la mise à jour périodique des registres Modbus de la télécommande en asynchrone
 interval:
   - interval: 30s
     then:
@@ -245,7 +248,7 @@ script:
           // [Heures (5b:15-11)][Minutes (6b:10-5)][Secondes/2 (5b:4-0)]
           // Note: Secondes stockées par pas de 2 secondes (0-29 représentant 0-58s)
           uint16_t time_reg = (t.hour << 11) | (t.minute << 5) | (t.second >> 1);
-          // Écriture dans le périphérique Modbus
+          // Écriture dans le périphérique Modbus en asynchrone
           std::vector<uint16_t> regs;
           regs.reserve(2);
           regs.push_back((uint16_t) date_reg);
