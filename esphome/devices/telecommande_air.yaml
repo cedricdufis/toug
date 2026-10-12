@@ -225,8 +225,7 @@ script:
             return;
           }
           if (t.year > 2100) {
-            // ESP_LOGE("update_modbus_from_datetime", 
-                     "Year %04u exceeds maximum (2100)", t.year);
+            // ESP_LOGE("update_modbus_from_datetime", "Year %04u exceeds maximum (2100)", t.year);
             return;
           }
           if (t.month < 1 || t.month > 12) {
