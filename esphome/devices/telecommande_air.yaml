@@ -238,8 +238,7 @@ script:
             return;
           }
           if (t.hour > 23 || t.minute > 59 || t.second > 59) {
-            // ESP_LOGE("update_modbus_from_datetime", 
-                     "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
+            // ESP_LOGE("update_modbus_from_datetime", "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
             return;
           }
           // [Offset de l'année 1980 (7b:15-9)][Mois (4b:8-5)][Jour (5b:4-0)]
@@ -296,9 +295,7 @@ script:
           uint8_t second = (time_reg & 0x1F) << 1;
           // Validation de la variable ESPTime
           if (year < 2016) {
-            // ESP_LOGE("update_datetime_from_modbus", 
-                     "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)",
-                     year, month, day);
+            // ESP_LOGE("update_datetime_from_modbus", "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)", year, month, day);
             return;
           }
           if (year > 2100) {
@@ -314,8 +311,7 @@ script:
             return;
           }
           if (hour > 23 || minute > 59 || second > 59) {
-            // ESP_LOGE("update_datetime_from_modbus", 
-                     "Invalid time: %02u:%02u:%02u", hour, minute, second);
+            // ESP_LOGE("update_datetime_from_modbus", "Invalid time: %02u:%02u:%02u", hour, minute, second);
             return;
           }
           // Mise à jour du registre datetime correspondant
