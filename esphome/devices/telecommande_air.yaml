@@ -1482,14 +1482,13 @@ number:
       return x*10;  // valeur acceptée
 
 datetime:
-  # Registre 16
   - platform: template
     name: "Réglage Date⁄Heure"
     id: reglage_date_heure
     type: datetime # Pour régler la date ET l'heure
     icon: mdi:clock-edit
     entity_category: config
-    update_interval: 30s
+    update_interval: 5s
     lambda: |-
       id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
       return id(reglage_date_heure).state_as_esptime();
@@ -1500,7 +1499,6 @@ datetime:
             if (x.year != 0 && x.month != 0 && x.day_of_month != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
               id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
             }
-  # Registre 31008
   - platform: template
     name: "Vacances début"
     id: vacances_debut
@@ -1508,7 +1506,6 @@ datetime:
     icon: mdi:calendar-start-outline
     entity_category: config
     optimistic: true
-  # Registre 31010
   - platform: template
     name: "Vacances fin"
     id: vacances_fin
