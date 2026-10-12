@@ -582,7 +582,7 @@ text_sensor:
     raw_encode: NONE
     on_value:
       - lambda: |-
-          if (std::stoul(x) == 0) {
+          if (std::stoul(x) == (uint32_t) 0) {
             id(vacances).turn_off();
             id(hors_gel).turn_off();
           }
@@ -598,7 +598,7 @@ text_sensor:
     raw_encode: NONE
     on_value:
       - lambda: |-
-          if (std::stoul(x) == 0) {
+          if (std::stoul(x) == (uint32_t) 0) {
             id(vacances).turn_off();
           }
   # Registre 31200
