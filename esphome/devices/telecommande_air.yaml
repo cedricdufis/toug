@@ -45,7 +45,7 @@ api:
         lambda: |-
           // --- 1) Vérification du dataset ---
           if (dataset.size() != 56) {
-            ESP_LOGE("change_prog", "Dataset invalide (56 hexa attendus, reçu %d)", dataset.size());
+            // ESP_LOGE("change_prog", "Dataset invalide (56 hexa attendus, reçu %d)", dataset.size());
             return;
           }
           // --- 2) Sélection de l’adresse en fonction du programme ---
@@ -55,7 +55,7 @@ api:
           else if (prog == "C" || prog == "c") start_address = 31228;
           else if (prog == "D" || prog == "d") start_address = 31242;
           else {
-            ESP_LOGE("change_prog", "Programme invalide : %s (attendu A/B/C/D)", prog.c_str());
+            // ESP_LOGE("change_prog", "Programme invalide : %s (attendu A/B/C/D)", prog.c_str());
             return;
           }
           // --- 3) Conversion HEX → registres 16 bits ---
@@ -69,7 +69,7 @@ api:
           }
           // --- 4) Envoi de la commande Modbus ---
           id(modbus_telecommande_async).write_multiple_registers(start_address, regs);
-          ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
+          // ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
 
 globals:
   - id: last_test_index
@@ -132,7 +132,7 @@ script:
             default: mode_str = "Unknown"; break;
           }
           id(mode_air_telecommande).publish_state(mode_str);
-          ESP_LOGD("Mode Air télécommande", "Publish state %s", mode_str.c_str());
+          // ESP_LOGD("Mode Air télécommande", "Publish state %s", mode_str.c_str());
   - id: auto_stop_test
     mode: restart
     then:
@@ -221,24 +221,24 @@ script:
           }
           // Validation de la variable ESPTime
           if (t.year < 2016) {
-            ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
+            // ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
             return;
           }
           if (t.year > 2100) {
-            ESP_LOGE("update_modbus_from_datetime", 
+            // ESP_LOGE("update_modbus_from_datetime", 
                      "Year %04u exceeds maximum (2100)", t.year);
             return;
           }
           if (t.month < 1 || t.month > 12) {
-            ESP_LOGE("update_modbus_from_datetime", "Invalid month: %02u", t.month);
+            // ESP_LOGE("update_modbus_from_datetime", "Invalid month: %02u", t.month);
             return;
           }
           if (t.day_of_month < 1 || t.day_of_month > 31) {
-            ESP_LOGE("update_modbus_from_datetime", "Invalid day: %02u", t.day_of_month);
+            // ESP_LOGE("update_modbus_from_datetime", "Invalid day: %02u", t.day_of_month);
             return;
           }
           if (t.hour > 23 || t.minute > 59 || t.second > 59) {
-            ESP_LOGE("update_modbus_from_datetime", 
+            // ESP_LOGE("update_modbus_from_datetime", 
                      "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
             return;
           }
@@ -255,15 +255,15 @@ script:
           regs.push_back((uint16_t) time_reg);
           if(ModbusRegister == "registre_16_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(16, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            // ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31008_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31008, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            // ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31010_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31010, regs);
-            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            // ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
   - id: update_datetime_from_modbus
     mode: parallel
@@ -282,7 +282,7 @@ script:
             FATdatetime = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
           // Validation de la présence de données
           if (FATdatetime == 0 || std::isnan(FATdatetime)) {
-            ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
+            // ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
             return;
           }
           uint16_t date_reg = FATdatetime >> 16;
@@ -296,25 +296,25 @@ script:
           uint8_t second = (time_reg & 0x1F) << 1;
           // Validation de la variable ESPTime
           if (year < 2016) {
-            ESP_LOGE("update_datetime_from_modbus", 
+            // ESP_LOGE("update_datetime_from_modbus", 
                      "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)",
                      year, month, day);
             return;
           }
           if (year > 2100) {
-            ESP_LOGE("update_datetime_from_modbus", "Year %04u exceeds maximum (2100)", year);
+            // ESP_LOGE("update_datetime_from_modbus", "Year %04u exceeds maximum (2100)", year);
             return;
           }
           if (month < 1 || month > 12) {
-            ESP_LOGE("update_datetime_from_modbus", "Invalid month: %02u", month);
+            // ESP_LOGE("update_datetime_from_modbus", "Invalid month: %02u", month);
             return;
           }
           if (day < 1 || day > 31) {
-            ESP_LOGE("update_datetime_from_modbus", "Invalid day: %02u", day);
+            // ESP_LOGE("update_datetime_from_modbus", "Invalid day: %02u", day);
             return;
           }
           if (hour > 23 || minute > 59 || second > 59) {
-            ESP_LOGE("update_datetime_from_modbus", 
+            // ESP_LOGE("update_datetime_from_modbus", 
                      "Invalid time: %02u:%02u:%02u", hour, minute, second);
             return;
           }
@@ -323,19 +323,19 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            // ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            // ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            // ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
 
 binary_sensor:
@@ -1417,7 +1417,7 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en m³/h, avant multiplicateur)
       if (x > 0 && x < 100) {
-        ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
+        // ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
         return 0;   // renvoit une valeur valide
       }
       return x;  // valeur acceptée
@@ -1454,7 +1454,7 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
       if (x > 0 && x < 150) {
-        ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
+        // ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
@@ -1476,7 +1476,7 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
       if (x > 0 && x < 30) {
-        ESP_LOGW("modbus", "Valeur interdite (%f Hz). Forcée à 0 Hz.", x);
+        // ESP_LOGW("modbus", "Valeur interdite (%f Hz). Forcée à 0 Hz.", x);
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
@@ -1634,7 +1634,7 @@ select:
         else if (x == "Prog D Clim") { new_air_mode = 8; }
         else if (x == "Ventilation") { new_air_mode = 9; }
         else { return; } // Arrêt si valeur non reconnue
-        ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
+        // ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
         // Utilisation du service Modbus pour écrire un registre
         auto call = id(registre_9_telecommande).make_call();
         call.set_value(new_air_mode);

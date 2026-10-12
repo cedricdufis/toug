@@ -12,7 +12,7 @@ script:
             default: mode_str = "Unknown"; break;
           }
           id(mode_ecs_telecommande).publish_state(mode_str);
-          ESP_LOGD("Mode ECS télécommande", "Publish mode ECS %s", mode_str.c_str());
+          // ESP_LOGD("Mode ECS télécommande", "Publish mode ECS %s", mode_str.c_str());
 
 binary_sensor:
   # Registre 20272
@@ -221,7 +221,7 @@ select:
         else if (x == "Prog D Clim") { new_air_mode = 8; }
         else if (x == "Ventilation") { new_air_mode = 9; }
         else { return; } // Arrêt si valeur non reconnue
-        ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
+        // ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
         // 1. Récupérer la valeur 16-bit actuelle
         uint16_t current_reg = (uint16_t)id(registre_9_telecommande).state;
         
