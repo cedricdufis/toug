@@ -18,5 +18,5 @@ uart:
             unsigned long currentMillis = millis();
             unsigned long elapsedTime = currentMillis - previousMillis;
             previousMillis = currentMillis;
-            // ESP_LOGD("custom", "Temps écoulé : %lu ms", elapsedTime);
+            ESP_LOGD("custom", "Temps écoulé : %lu ms", elapsedTime);
         - lambda: UARTDebug::log_hex(direction, bytes, ':');
