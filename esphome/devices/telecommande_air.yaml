@@ -4,11 +4,6 @@ esphome:
       - select.set:
           id: mode_test
           option: "Aucun"
-      # Attendre 60 secondes avant de mettre à jour le début et la fin des vacances depuis le Modbus
-      - delay: 60s
-      - lambda: |-
-          id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
-          id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
 
 uart:
   - id: U2
@@ -26,8 +21,14 @@ modbus:
 modbus_controller:
   - address: 0x0001
     id: modbus_telecommande
-    update_interval: 10s
+    update_interval: 20s
     modbus_id: modbus2
+    # Récupération initiale des dates de début et de fin des vacances dès la connection faite
+    on_online:
+      - then:
+          - lambda: |-
+              id(update_datetime_from_modbus).execute("registre_31008_telecommande", "vacances_debut");
+              id(update_datetime_from_modbus).execute("registre_31010_telecommande", "vacances_fin");
 
 # Configuration du client Modbus asynchrone pour envoyer des commandes Modbus sans utiliser le contrôleur principal
 modbus_client:
@@ -45,7 +46,7 @@ api:
         lambda: |-
           // --- 1) Vérification du dataset ---
           if (dataset.size() != 56) {
-            // ESP_LOGE("change_prog", "Dataset invalide (56 hexa attendus, reçu %d)", dataset.size());
+            ESP_LOGE("change_prog", "Dataset invalide (56 hexa attendus, reçu %d)", dataset.size());
             return;
           }
           // --- 2) Sélection de l’adresse en fonction du programme ---
@@ -55,7 +56,7 @@ api:
           else if (prog == "C" || prog == "c") start_address = 31228;
           else if (prog == "D" || prog == "d") start_address = 31242;
           else {
-            // ESP_LOGE("change_prog", "Programme invalide : %s (attendu A/B/C/D)", prog.c_str());
+            ESP_LOGE("change_prog", "Programme invalide : %s (attendu A/B/C/D)", prog.c_str());
             return;
           }
           // --- 3) Conversion HEX → registres 16 bits ---
@@ -69,21 +70,15 @@ api:
           }
           // --- 4) Envoi de la commande Modbus ---
           id(modbus_telecommande_async).write_multiple_registers(start_address, regs);
-          // ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
+          ESP_LOGI("change_prog", "Programme %s mis à jour (%d registres à partir de %u)", prog.c_str(), regs.size(), start_address);
 
-globals:
-  - id: last_test_index
-    type: int
-    restore_value: no
-    initial_value: '-1'
-
-time:
-  - platform: homeassistant
-    id: homeassistant_time
-    timezone: "Europe/Paris"
-
-# Intervalle pour la mise à jour périodique des registres Modbus de la télécommande en asynchrone
 interval:
+  # Intervalle pour la mise à jour périodique de la date/heure du Modbus depuis Home Assistant
+  - interval: 1h
+    then:
+      - lambda: |-
+          id(update_modbus_from_datetime).execute("registre_16_telecommande", "homeassistant_time");
+  # Intervalle pour la mise à jour périodique des registres Modbus de la télécommande en asynchrone
   - interval: 30s
     then:
       - lambda: |-
@@ -110,9 +105,14 @@ interval:
             regs_fin.push_back((uint16_t) 0);
             id(modbus_telecommande_async).write_multiple_registers(31010, regs_fin);
           }
+  # Intervalle pour la mise à jour périodique de la date/heure depuis le Modbus
+  - interval: 10s
+    then:
+      - lambda: |-
+          id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
 
 script:
-  - id: update_mode_air_telecommande
+  - id: update_mode_air
     then:
       - lambda: |-
           uint16_t  value = (uint16_t )id(registre_9_telecommande).state;
@@ -131,8 +131,8 @@ script:
             case 9:  mode_str = "Ventilation"; break;
             default: mode_str = "Unknown"; break;
           }
-          id(mode_air_telecommande).publish_state(mode_str);
-          // ESP_LOGD("Mode Air télécommande", "Publish state %s", mode_str.c_str());
+          id(mode_air).publish_state(mode_str);
+          ESP_LOGD("Mode air", "Publish state %s", mode_str.c_str());
   - id: auto_stop_test
     mode: restart
     then:
@@ -210,7 +210,10 @@ script:
           t.minute = 0;
           t.second = 0;
           // On prend la valeur du registre datetime correspondant
-          if(datetimeRegister == "reglage_date_heure") {
+          if(datetimeRegister == "homeassistant_time") {
+            t = id(homeassistant_time).now();
+          }
+          else if(datetimeRegister == "reglage_date_heure") {
             t = id(reglage_date_heure).state_as_esptime();
           }
           else if(datetimeRegister == "vacances_debut") {
@@ -221,23 +224,23 @@ script:
           }
           // Validation de la variable ESPTime
           if (t.year < 2016) {
-            // ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Date %04u-%02u-%02u is before minimum (2016-01-01)", t.year, t.month, t.day_of_month);
             return;
           }
           if (t.year > 2100) {
-            // ESP_LOGE("update_modbus_from_datetime", "Year %04u exceeds maximum (2100)", t.year);
+            ESP_LOGE("update_modbus_from_datetime", "Year %04u exceeds maximum (2100)", t.year);
             return;
           }
           if (t.month < 1 || t.month > 12) {
-            // ESP_LOGE("update_modbus_from_datetime", "Invalid month: %02u", t.month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid month: %02u", t.month);
             return;
           }
           if (t.day_of_month < 1 || t.day_of_month > 31) {
-            // ESP_LOGE("update_modbus_from_datetime", "Invalid day: %02u", t.day_of_month);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid day: %02u", t.day_of_month);
             return;
           }
           if (t.hour > 23 || t.minute > 59 || t.second > 59) {
-            // ESP_LOGE("update_modbus_from_datetime", "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
+            ESP_LOGE("update_modbus_from_datetime", "Invalid time: %02u:%02u:%02u", t.hour, t.minute, t.second);
             return;
           }
           // [Offset de l'année 1980 (7b:15-9)][Mois (4b:8-5)][Jour (5b:4-0)]
@@ -253,15 +256,15 @@ script:
           regs.push_back((uint16_t) time_reg);
           if(ModbusRegister == "registre_16_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(16, regs);
-            // ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_16_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31008_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31008, regs);
-            // ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_31008_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
           else if(ModbusRegister == "registre_31010_telecommande") {
             id(modbus_telecommande_async).write_multiple_registers(31010, regs);
-            // ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
+            ESP_LOGD("update_modbus_from_datetime_registre_31010_telecommande", "Encoded %04u-%02u-%02u %02u:%02u:%02u → 0x%04x-%04x", t.year, t.month, t.day_of_month, t.hour, t.minute, t.second, date_reg, time_reg);
           }
   - id: update_datetime_from_modbus
     mode: parallel
@@ -273,14 +276,14 @@ script:
           // Lecture de la valeur du registre Modbus correspondant
           uint32_t FATdatetime = 0;
           if(ModbusRegister == "registre_16_telecommande")
-            FATdatetime = (uint32_t) std::stoul(id(registre_16_telecommande).state);
+            FATdatetime = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
           else if(ModbusRegister == "registre_31008_telecommande")
-            FATdatetime = (uint32_t) std::stoul(id(registre_31008_telecommande).state);
+            FATdatetime = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
           else if(ModbusRegister == "registre_31010_telecommande")
-            FATdatetime = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
+            FATdatetime = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
           // Validation de la présence de données
           if (FATdatetime == 0 || std::isnan(FATdatetime)) {
-            // ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
+            ESP_LOGW("update_datetime_from_modbus", "No data at address %s", ModbusRegister.c_str());
             return;
           }
           uint16_t date_reg = FATdatetime >> 16;
@@ -294,23 +297,23 @@ script:
           uint8_t second = (time_reg & 0x1F) << 1;
           // Validation de la variable ESPTime
           if (year < 2016) {
-            // ESP_LOGE("update_datetime_from_modbus", "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)", year, month, day);
+            ESP_LOGE("update_datetime_from_modbus", "Decoded date %04u-%02u-%02u is before minimum (2016-01-01)", year, month, day);
             return;
           }
           if (year > 2100) {
-            // ESP_LOGE("update_datetime_from_modbus", "Year %04u exceeds maximum (2100)", year);
+            ESP_LOGE("update_datetime_from_modbus", "Year %04u exceeds maximum (2100)", year);
             return;
           }
           if (month < 1 || month > 12) {
-            // ESP_LOGE("update_datetime_from_modbus", "Invalid month: %02u", month);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid month: %02u", month);
             return;
           }
           if (day < 1 || day > 31) {
-            // ESP_LOGE("update_datetime_from_modbus", "Invalid day: %02u", day);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid day: %02u", day);
             return;
           }
           if (hour > 23 || minute > 59 || second > 59) {
-            // ESP_LOGE("update_datetime_from_modbus", "Invalid time: %02u:%02u:%02u", hour, minute, second);
+            ESP_LOGE("update_datetime_from_modbus", "Invalid time: %02u:%02u:%02u", hour, minute, second);
             return;
           }
           // Mise à jour du registre datetime correspondant
@@ -318,20 +321,116 @@ script:
             auto call_reglage_date_heure = id(reglage_date_heure).make_call();
             call_reglage_date_heure.set_datetime(year, month, day, hour, minute, second);
             call_reglage_date_heure.perform();
-            // ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            ESP_LOGD("update_datetime_from_modbus_reglage_date_heure", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_debut") {
             auto call_vacances_debut = id(vacances_debut).make_call();
             call_vacances_debut.set_datetime(year, month, day, hour, minute, second);
             call_vacances_debut.perform();
-            // ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            ESP_LOGD("update_datetime_from_modbus_vacances_debut", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
           else if(datetimeRegister == "vacances_fin") {
             auto call_vacances_fin = id(vacances_fin).make_call();
             call_vacances_fin.set_datetime(year, month, day, hour, minute, second);
             call_vacances_fin.perform();
-            // ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
+            ESP_LOGD("update_datetime_from_modbus_vacances_fin", "Decoded: %04u-%02u-%02u %02u:%02u:%02u from 0x%04x-%04x", year, month, day, hour, minute, second, date_reg, time_reg);
           }
+  - id: decode_program_schedule
+    mode: parallel
+    parameters:
+      prog: string
+    then:
+      - lambda: |-
+          const char* jours[7] = {
+            "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
+          };
+          std::string out = "";
+          std::string raw = "";
+          if (prog == "a") raw = id(proga).state;
+          else if (prog == "b") raw = id(progb).state;
+          else if (prog == "c") raw = id(progc).state;
+          else if (prog == "d") raw = id(progd).state;
+          // Vérification de la taille des données brutes
+          if (raw.size() < 56) {
+            out = std::string("Erreur : données insuffisantes");
+          }
+          else {
+            for (int j = 0; j < 7; j++) {
+              std::string hex32 = raw.substr(j * 8, 8);
+              uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
+              std::string plages = "";
+              int start = -1;
+              for (int h = 0; h < 24; h++) {
+                bool eco = (mask >> h) & 1;
+                if (eco && start == -1) start = h;
+                bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
+                if (end_cond) {
+                  int end = eco && h == 23 ? h + 1 : h;
+                  if (plages.size()) plages += ", ";
+                  plages += to_string(start) + "h-" + to_string(end) + "h";
+                  start = -1;
+                }
+              }
+              // Si aucune plage n'a été trouvée, indiquer "(aucune)"
+              if (plages.size() == 0) plages = "(aucune)";
+              out += jours[j];
+              out += " : ";
+              out += plages;
+              if (j < 6) out += "\n";
+            }
+          }
+          if (prog == "a"){
+            id(proga_text).publish_state(out);
+          }
+          else if (prog == "b"){
+            id(progb_text).publish_state(out);
+          }
+          else if (prog == "c"){
+            id(progc_text).publish_state(out);
+          }
+          else if (prog == "d"){
+            id(progd_text).publish_state(out);
+          }
+
+globals:
+  - id: last_test_index
+    type: int
+    restore_value: no
+    initial_value: '-1'
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: "Europe/Paris"
+
+datetime:
+  - platform: template
+    name: "Réglage Date⁄Heure"
+    id: reglage_date_heure
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:clock-edit
+    entity_category: config
+    optimistic: true
+    set_action:
+      - lambda: |-
+          // S'assure que la date/heure n'est pas nulle avant de mettre à jour le Modbus
+          if (x.year != 0 && x.month != 0 && x.day_of_month != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
+            id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
+          }
+  - platform: template
+    name: "Vacances début"
+    id: vacances_debut
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:calendar-start-outline
+    entity_category: config
+    optimistic: true
+  - platform: template
+    name: "Vacances fin"
+    id: vacances_fin
+    type: datetime # Pour régler la date ET l'heure
+    icon: mdi:calendar-end-outline
+    entity_category: config
+    optimistic: true
 
 binary_sensor:
   - platform: template
@@ -340,9 +439,9 @@ binary_sensor:
     icon: mdi:beach
     device_class: light
     lambda: |-
-      uint32_t t_deb = (uint32_t) std::stoul(id(registre_31008_telecommande).state);
-      uint32_t t_fin = (uint32_t) std::stoul(id(registre_31010_telecommande).state);
-      uint32_t t_now = (uint32_t) std::stoul(id(registre_16_telecommande).state);
+      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
       if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
         return false;
       }
@@ -353,9 +452,9 @@ binary_sensor:
     icon: mdi:snowflake
     device_class: light
     lambda: |-
-      uint32_t t_deb = (uint32_t)std::stoul(id(registre_31008_telecommande).state);
-      uint32_t t_fin = (uint32_t)std::stoul(id(registre_31010_telecommande).state);
-      uint32_t t_now = (uint32_t)std::stoul(id(registre_16_telecommande).state);
+      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
       if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
         return false;
       }
@@ -457,7 +556,7 @@ text_sensor:
     register_type: holding
     address: 16
     response_size: 4
-    raw_encode: NONE
+    raw_encode: HEXBYTES
   # Registre 51
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -481,8 +580,8 @@ text_sensor:
   # Registre 6021
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
-    id: etat_circuit_frigo_telecommande
-    name: "État du circuit frigo télécommande"
+    id: etat_circuit_frigo
+    name: "État du circuit frigo"
     icon: mdi:valve
     register_type: holding
     address: 6021
@@ -577,13 +676,14 @@ text_sensor:
     register_type: holding
     address: 31008
     response_size: 4
-    raw_encode: NONE
+    raw_encode: HEXBYTES
     on_value:
-      - lambda: |-
-          if (std::stoul(x) == (uint32_t) 0) {
-            id(vacances).turn_off();
-            id(hors_gel).turn_off();
-          }
+      then:
+        - lambda: |-
+            if ((uint32_t) strtol(x.c_str(), NULL, 32) == 0) {
+              id(vacances).turn_off();
+              id(hors_gel).turn_off();
+            }
   # Registre 31010 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -593,12 +693,13 @@ text_sensor:
     register_type: holding
     address: 31010
     response_size: 4
-    raw_encode: NONE
+    raw_encode: HEXBYTES
     on_value:
-      - lambda: |-
-          if (std::stoul(x) == (uint32_t) 0) {
-            id(vacances).turn_off();
-          }
+      then:
+        - lambda: |-
+            if ((uint32_t) strtol(x.c_str(), NULL, 32) == 0) {
+              id(vacances).turn_off();
+            }
   # Registre 31200
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -648,185 +749,29 @@ text_sensor:
     name: "Progr. A"
     icon: mdi:calendar-multiselect
     lambda: |-
-      const char* jours[7] = {
-        "Lundi", "Mardi", "Mercredi", "Jeudi",
-        "Vendredi", "Samedi", "Dimanche"
-      };
-
-      std::string raw = id(proga).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
-      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
-
-      std::string out = "";
-
-      for (int j = 0; j < 7; j++) {
-        // Extraire 4 octets = 8 chars hex
-        std::string hex32 = raw.substr(j * 8, 8);
-
-        // Convertir HEX → uint32
-        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
-
-        // Décodage des plages horaires
-        std::string plages = "";
-        int start = -1;
-        for (int h = 0; h < 24; h++) {
-          bool eco = (mask >> h) & 1;
-          if (eco && start == -1) start = h;
-          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
-          if (end_cond) {
-            int end = eco && h == 23 ? h + 1 : h;
-            if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
-            start = -1;
-          }
-        }
-        if (plages.size() == 0) plages = "(aucune)";
-
-        // Ajout au texte final
-        out += jours[j];
-        out += " : ";
-        out += plages;
-        if (j < 6) out += "\n";
-      }
-
-      return out;
+      id(decode_program_schedule).execute("a");
+      return id(proga_text).state;
   - platform: template
     id: progb_text
     name: "Progr. B"
     icon: mdi:calendar-multiselect
     lambda: |-
-      const char* jours[7] = {
-        "Lundi", "Mardi", "Mercredi", "Jeudi",
-        "Vendredi", "Samedi", "Dimanche"
-      };
-
-      std::string raw = id(progb).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
-      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
-
-      std::string out = "";
-
-      for (int j = 0; j < 7; j++) {
-        // Extraire 4 octets = 8 chars hex
-        std::string hex32 = raw.substr(j * 8, 8);
-
-        // Convertir HEX → uint32
-        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
-
-        // Décodage des plages horaires
-        std::string plages = "";
-        int start = -1;
-        for (int h = 0; h < 24; h++) {
-          bool eco = (mask >> h) & 1;
-          if (eco && start == -1) start = h;
-          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
-          if (end_cond) {
-            int end = eco && h == 23 ? h + 1 : h;
-            if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
-            start = -1;
-          }
-        }
-        if (plages.size() == 0) plages = "(aucune)";
-
-        // Ajout au texte final
-        out += jours[j];
-        out += " : ";
-        out += plages;
-        if (j < 6) out += "\n";
-      }
-
-      return out;
+      id(decode_program_schedule).execute("b");
+      return id(progb_text).state;
   - platform: template
     id: progc_text
     name: "Progr. C"
     icon: mdi:calendar-multiselect
     lambda: |-
-      const char* jours[7] = {
-        "Lundi", "Mardi", "Mercredi", "Jeudi",
-        "Vendredi", "Samedi", "Dimanche"
-      };
-
-      std::string raw = id(progc).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
-      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
-
-      std::string out = "";
-
-      for (int j = 0; j < 7; j++) {
-        // Extraire 4 octets = 8 chars hex
-        std::string hex32 = raw.substr(j * 8, 8);
-
-        // Convertir HEX → uint32
-        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
-
-        // Décodage des plages horaires
-        std::string plages = "";
-        int start = -1;
-        for (int h = 0; h < 24; h++) {
-          bool eco = (mask >> h) & 1;
-          if (eco && start == -1) start = h;
-          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
-          if (end_cond) {
-            int end = eco && h == 23 ? h + 1 : h;
-            if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
-            start = -1;
-          }
-        }
-        if (plages.size() == 0) plages = "(aucune)";
-
-        // Ajout au texte final
-        out += jours[j];
-        out += " : ";
-        out += plages;
-        if (j < 6) out += "\n";
-      }
-
-      return out;
+      id(decode_program_schedule).execute("c");
+      return id(progc_text).state;
   - platform: template
     id: progd_text
     name: "Progr. D"
     icon: mdi:calendar-multiselect
     lambda: |-
-      const char* jours[7] = {
-        "Lundi", "Mardi", "Mercredi", "Jeudi",
-        "Vendredi", "Samedi", "Dimanche"
-      };
-
-      std::string raw = id(progd).state;  // 28 hex bytes sous forme "AABBCCDDEE..."
-      if (raw.size() < 56) return std::string("Erreur : données insuffisantes");
-
-      std::string out = "";
-
-      for (int j = 0; j < 7; j++) {
-        // Extraire 4 octets = 8 chars hex
-        std::string hex32 = raw.substr(j * 8, 8);
-
-        // Convertir HEX → uint32
-        uint32_t mask = (uint32_t) strtoul(hex32.c_str(), nullptr, 16);
-
-        // Décodage des plages horaires
-        std::string plages = "";
-        int start = -1;
-        for (int h = 0; h < 24; h++) {
-          bool eco = (mask >> h) & 1;
-          if (eco && start == -1) start = h;
-          bool end_cond = (!eco && start != -1) || (h == 23 && start != -1);
-          if (end_cond) {
-            int end = eco && h == 23 ? h + 1 : h;
-            if (plages.size()) plages += ", ";
-            plages += to_string(start) + "h-" + to_string(end) + "h";
-            start = -1;
-          }
-        }
-        if (plages.size() == 0) plages = "(aucune)";
-
-        // Ajout au texte final
-        out += jours[j];
-        out += " : ";
-        out += plages;
-        if (j < 6) out += "\n";
-      }
-
-      return out;
+      id(decode_program_schedule).execute("d");
+      return id(progd_text).state;
 
 sensor:
   # Registre 7
@@ -1194,6 +1139,16 @@ sensor:
     address: 21000
     register_type: holding
     value_type: U_WORD
+  # Registre 21001
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: status_test_actif
+    name: "Status du test actif"
+    icon: mdi:test-tube
+    entity_category: diagnostic
+    address: 21001
+    register_type: holding
+    value_type: U_WORD
   # Registre 21668
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1394,7 +1349,7 @@ number:
     value_type: U_WORD
     on_value:
       - lambda: |-
-          id(update_mode_air_telecommande).execute();
+          id(update_mode_air).execute();
   # Registre 64
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -1412,7 +1367,7 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en m³/h, avant multiplicateur)
       if (x > 0 && x < 100) {
-        // ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
+        ESP_LOGW("modbus", "Valeur interdite (%f m³/h). Forcée à 0 m³/h.", x);
         return 0;   // renvoit une valeur valide
       }
       return x;  // valeur acceptée
@@ -1449,7 +1404,7 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
       if (x > 0 && x < 150) {
-        // ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
+        ESP_LOGW("modbus", "Valeur interdite (%f rpm). Forcée à 0 rpm.", x);
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
@@ -1471,43 +1426,10 @@ number:
     write_lambda: |-
       // ici x = valeur demandée (en Hz, avant multiplicateur)
       if (x > 0 && x < 30) {
-        // ESP_LOGW("modbus", "Valeur interdite (%f Hz). Forcée à 0 Hz.", x);
+        ESP_LOGW("modbus", "Valeur interdite (%f Hz). Forcée à 0 Hz.", x);
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
-
-datetime:
-  - platform: template
-    name: "Réglage Date⁄Heure"
-    id: reglage_date_heure
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:clock-edit
-    entity_category: config
-    update_interval: 5s
-    lambda: |-
-      id(update_datetime_from_modbus).execute("registre_16_telecommande", "reglage_date_heure");
-      return id(reglage_date_heure).state_as_esptime();
-    set_action:
-      then:
-        - lambda: |-
-            // S'assure que la date/heure n'est pas nulle avant de mettre à jour le Modbus
-            if (x.year != 0 && x.month != 0 && x.day_of_month != 0 && x.hour != 0 && x.minute != 0 && x.second != 0) {
-              id(update_modbus_from_datetime).execute("registre_16_telecommande", "reglage_date_heure");
-            }
-  - platform: template
-    name: "Vacances début"
-    id: vacances_debut
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:calendar-start-outline
-    entity_category: config
-    optimistic: true
-  - platform: template
-    name: "Vacances fin"
-    id: vacances_fin
-    type: datetime # Pour régler la date ET l'heure
-    icon: mdi:calendar-end-outline
-    entity_category: config
-    optimistic: true
 
 select:
   # Registre 21000
@@ -1598,8 +1520,8 @@ select:
       "Dollars": 1
   # Registre 9
   - platform: template
-    id: mode_air_telecommande
-    name: "Mode air télécommande"
+    id: mode_air
+    name: "Mode air"
     icon: mdi:air-conditioner
     options:
       - "Off"
@@ -1613,8 +1535,8 @@ select:
       - "Prog D Clim"
       - "Ventilation"
     lambda: |-
-      id(update_mode_air_telecommande).execute();
-      return std::string(id(mode_air_telecommande).current_option());
+      id(update_mode_air).execute();
+      return std::string(id(mode_air).current_option());
     set_action:
       lambda: |-
         uint16_t new_air_mode;
@@ -1629,13 +1551,13 @@ select:
         else if (x == "Prog D Clim") { new_air_mode = 8; }
         else if (x == "Ventilation") { new_air_mode = 9; }
         else { return; } // Arrêt si valeur non reconnue
-        // ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
+        ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
         // Utilisation du service Modbus pour écrire un registre
         auto call = id(registre_9_telecommande).make_call();
         call.set_value(new_air_mode);
         call.perform();
         //Mise à jour de la valeur du select
-        id(update_mode_air_telecommande).execute();
+        id(update_mode_air).execute();
 
 switch:
   - platform: template
@@ -1645,8 +1567,7 @@ switch:
     entity_category: config
     restore_mode: ALWAYS_OFF
     turn_on_action:
-      - lambda: |-
-            id(hors_gel).turn_off();
+      - switch.turn_off: hors_gel
   - platform: template
     id: hors_gel
     name: "Hors-gel"
@@ -1654,8 +1575,7 @@ switch:
     entity_category: config
     restore_mode: ALWAYS_OFF
     turn_on_action:
-      - lambda: |-
-            id(vacances).turn_off();
+      - switch.turn_off: vacances
 
 # Example configuration entry
 light:
