@@ -100,7 +100,7 @@ sensor:
     accuracy_decimals: 0
     # Registre 21672
   - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+    modbus_controller_id: modbus_telecommande_lent
     id: conso_eau_chaude
     name: "Conso eau chaude"
     icon: mdi:lightning-bolt
@@ -112,7 +112,7 @@ sensor:
     unit_of_measurement: "kWh"
     # Registre 21674
   - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+    modbus_controller_id: modbus_telecommande_lent
     id: conso_eau_chaude_appoint
     name: "Conso eau chaude appoint"
     icon: mdi:lightning-bolt
@@ -124,7 +124,7 @@ sensor:
     unit_of_measurement: "kWh"
     # Registre 21682
   - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
+    modbus_controller_id: modbus_telecommande_lent
     id: cout_eau_chaude
     name: "Coût eau chaude"
     icon: mdi:cash
