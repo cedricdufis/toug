@@ -1,0 +1,666 @@
+climate:
+  - &thermostat
+    platform: template
+    id: thermostat_k1a
+    name: "Thermostat ${K1a}"
+    icon: mdi:home-thermometer
+    visual:
+      min_temperature: 0
+      max_temperature: 31
+      temperature_step:
+        target_temperature: 1
+        current_temperature: 0.1
+    sensor: temperature_k1a
+    supports_action: true
+    supported_modes:
+      - "OFF"
+      - "HEAT"
+      - "COOL"
+      - "FAN_ONLY"
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k1a).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k1a).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    #current_humidity_template: "{{ states('sensor.aqara_temperature_et_humidite_thermostat_k2_humidity') }}" # Avec capteur additionnel
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k1a).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k1b
+    name: "Thermostat ${K1b}"
+    sensor: temperature_k1b
+    internal: ${cacher_canal_k1b}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k1b).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k1b).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k1b).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k2
+    name: "Thermostat ${K2}"
+    sensor: temperature_k2
+    internal: ${nombre_thermostats | int < 2}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k2).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k2).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k2).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k3
+    name: "Thermostat ${K3}"
+    sensor: temperature_k3
+    internal: ${nombre_thermostats | int < 3}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k3).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k3).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k3).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k4
+    name: "Thermostat ${K4}"
+    sensor: temperature_k4
+    internal: ${nombre_thermostats | int < 4}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k4).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k4).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k4).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k5
+    name: "Thermostat ${K5}"
+    sensor: temperature_k5
+    internal: ${nombre_thermostats | int < 5}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k5).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k5).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k5).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k6
+    name: "Thermostat ${K6}"
+    sensor: temperature_k6
+    internal: ${nombre_thermostats | int < 6}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k6).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k6).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k6).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k7
+    name: "Thermostat ${K7}"
+    sensor: temperature_k7
+    internal: ${nombre_thermostats | int < 7}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k7).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k7).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k7).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k8
+    name: "Thermostat ${K8}"
+    sensor: temperature_k8
+    internal: ${nombre_thermostats | int < 8}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k8).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k8).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k8).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_k9
+    name: "Thermostat ${K9}"
+    sensor: temperature_k9
+    internal: ${nombre_thermostats | int < 9}
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+                auto call_temp = id(consigne_k9).make_call();
+                call_temp.number_to_max();
+                call_temp.perform();
+              }
+              else {
+                auto call_temp = id(consigne_k9).make_call();
+                call_temp.number_to_min();
+                call_temp.perform();
+              }
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (std::string(id(mode_air).current_option()) == std::string("Confort Chauffage") || std::string(id(mode_air).current_option()) == std::string("Eco Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog A Chauffage") || std::string(id(mode_air).current_option()) == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (std::string(id(mode_air).current_option()) == std::string("Confort Clim") || std::string(id(mode_air).current_option()) == std::string("Boost Clim") || std::string(id(mode_air).current_option()) == std::string("Prog C Clim") || std::string(id(mode_air).current_option()) == std::string("Prog D Clim")))
+              temperature = 31;
+            auto call = id(consigne_k9).make_call();
+            call.set_value(temperature);
+            call.perform();
+
+  - <<: *thermostat
+    id: thermostat_global
+    name: "Thermostat global"
+    sensor: temperature_k1a
+    set_mode_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
+            else if (x == climate::CLIMATE_MODE_OFF) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    supported_presets:
+      - "COMFORT"
+      - "ECO"
+      - "AWAY"
+      - "HOME"
+      - "BOOST"
+      - "NONE"
+    set_preset_action:
+      then:
+        - lambda: |-
+            auto call_modeair = id(mode_air).make_call();
+            auto call_modetest = id(mode_test).make_call();
+            if (x == climate::CLIMATE_PRESET_COMFORT && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_COMFORT && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_ECO && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Eco Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_AWAY && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Prog A Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_AWAY && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Prog C Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_HOME && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Prog B Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_HOME && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Prog D Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_BOOST && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Boost Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_PRESET_NONE) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
+            call_modeair.perform();
+            call_modetest.perform();
+    set_target_temperature_action:
+      then:
+        - lambda: |-
+            uint16_t temperature = (uint16_t) x;
+            if (x < 16 && (id(mode_air).current_option() == std::string("Confort Chauffage") || id(mode_air).current_option() == std::string("Eco Chauffage") || id(mode_air).current_option() == std::string("Prog A Chauffage") || id(mode_air).current_option() == std::string("Prog B Chauffage")))
+              temperature = 16;
+            else if (x > 24 && (id(mode_air).current_option() == std::string("Confort Chauffage") || id(mode_air).current_option() == std::string("Eco Chauffage") || id(mode_air).current_option() == std::string("Prog A Chauffage") || id(mode_air).current_option() == std::string("Prog B Chauffage")))
+              temperature = 24;
+            else if (x < 22 && (id(mode_air).current_option() == std::string("Confort Clim") || id(mode_air).current_option() == std::string("Boost Clim") || id(mode_air).current_option() == std::string("Prog C Clim") || id(mode_air).current_option() == std::string("Prog D Clim")))
+              temperature = 22;
+            else if (x > 31 && (id(mode_air).current_option() == std::string("Confort Clim") || id(mode_air).current_option() == std::string("Boost Clim") || id(mode_air).current_option() == std::string("Prog C Clim") || id(mode_air).current_option() == std::string("Prog D Clim")))
+              temperature = 31;
+            // Faire la boucle ne marche pas, le compilateur dit que "set_value" et "perform" n'appartiennent pas à l'entité ModbusNumber !!!
+            //auto consignes = std::vector{id(consigne_k1a), id(consigne_k1b), id(consigne_k2), id(consigne_k3), id(consigne_k4), id(consigne_k5), id(consigne_k6), id(consigne_k7), id(consigne_k8), id(consigne_k9)};
+            //consignes.resize(${nombre_thermostats} + 1);
+            //for (int i = 0; i < consignes.size(); i++) {
+            //  consignes[i]->make_call();
+            //  consignes[i]->set_value(temperature);
+            //  consignes[i]->perform();
+            //}
+            auto call_k1a = id(consigne_k1a).make_call();
+            call_k1a.set_value(temperature);
+            call_k1a.perform();
+            auto call_k1b = id(consigne_k1b).make_call();
+            call_k1b.set_value(temperature);
+            call_k1b.perform();
+            auto call_k2 = id(consigne_k2).make_call();
+            call_k2.set_value(temperature);
+            call_k2.perform();
+            auto call_k3 = id(consigne_k3).make_call();
+            call_k3.set_value(temperature);
+            call_k3.perform();
+            auto call_k4 = id(consigne_k4).make_call();
+            call_k4.set_value(temperature);
+            call_k4.perform();
+            auto call_k5 = id(consigne_k5).make_call();
+            call_k5.set_value(temperature);
+            call_k5.perform();
+            auto call_k6 = id(consigne_k6).make_call();
+            call_k6.set_value(temperature);
+            call_k6.perform();
+            auto call_k7 = id(consigne_k7).make_call();
+            call_k7.set_value(temperature);
+            call_k7.perform();
+            auto call_k8 = id(consigne_k8).make_call();
+            call_k8.set_value(temperature);
+            call_k8.perform();
+            auto call_k9 = id(consigne_k9).make_call();
+            call_k9.set_value(temperature);
+            call_k9.perform();
