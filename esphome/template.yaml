@@ -42,7 +42,7 @@ substitutions:
 ## Choix et téléchargement de la configuration ESPHome
 packages:
   remote_package:
-    url: https://github.com/djtef/toug
+    url: https://github.com/cedricdufis/toug
     ref: main
     refresh: 300s
     files:
