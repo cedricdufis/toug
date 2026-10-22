@@ -22,14 +22,17 @@ substitutions:
   # K7: Pièce 7
   # K8: Pièce 8
   # K9: Pièce 9
+  
+  # 5/ Indiquer si on veut cacher le canal K1b
+  cacher_canal_k1b: true
 
-  #5/ Indiquer la version de la TOUG (voir PCB)
+  # 6/ Indiquer la version de la TOUG (voir PCB)
   version: #V1.0 (2025) ou V2.0 (2026)
 
-  # 6/ Indiquer si la TOUG possède le détecteur d'ouverture des bouches
+  # 7/ Indiquer si la TOUG possède le détecteur d'ouverture des bouches
   detecteur_ouverture_bouches: #true ou false
 
-  # 7/ Voir ci-dessous
+  # 8/ Voir ci-dessous
 
 ## Customization area
 ##### My customization - Start #####
