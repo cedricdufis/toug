@@ -117,14 +117,11 @@ interval:
 
 script:
   - id: update_mode_air
+    mode: parallel
     then:
       - lambda: |-
+          // Récupération du mode air depuis le registre 9 de la télécommande puis mise à jour de l'état du mode air
           uint16_t  value = (uint16_t )id(registre_9_telecommande).state;
-          auto thermostats = std::vector{id(thermostat_global), id(thermostat_k1a), id(thermostat_k1b), id(thermostat_k2), id(thermostat_k3), id(thermostat_k4), id(thermostat_k5), id(thermostat_k6), id(thermostat_k7), id(thermostat_k8), id(thermostat_k9)};
-          thermostats.resize(${nombre_thermostats} + 2);
-          for (int i = 0; i < thermostats.size(); i++) {
-            thermostats[i]->make_call();
-          }
           value = value & 0x00FF; 
           std::string mode_str;
           switch (value) {
@@ -140,81 +137,92 @@ script:
             case 9:  mode_str = "Ventilation"; break;
             default: mode_str = "Unknown"; break;
           }
-          if (mode_str == "Off") {
+          id(mode_air).publish_state(mode_str);
+          ESP_LOGD("Mode air", "Publish state %s", mode_str.c_str());
+      - delay: 500ms
+      - lambda: |-
+          // Récupération du mode air depuis le registre 9 de la télécommande
+          uint16_t  value = (uint16_t )id(registre_9_telecommande).state;
+          value = value & 0x00FF;
+          // Mise à jour des thermostats en fonction du mode air
+          auto thermostats = std::vector{id(thermostat_global), id(thermostat_k1a), id(thermostat_k1b), id(thermostat_k2), id(thermostat_k3), id(thermostat_k4), id(thermostat_k5), id(thermostat_k6), id(thermostat_k7), id(thermostat_k8), id(thermostat_k9)};
+          thermostats.resize(${nombre_thermostats} + 2);
+          for (int i = 0; i < thermostats.size(); i++) {
+            thermostats[i]->make_call();
+          }
+          if (value == 0 && id(mode_test).current_option() == std::string("Aucun")) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_OFF;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_OFF);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_NONE);
           }
-          else if (mode_str == "Confort Chauffage") {
+          else if (value == 1) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_HEATING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_HEAT);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_COMFORT);
           }
-          else if (mode_str == "Eco Chauffage") {
+          else if (value == 2) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_HEATING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_HEAT);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_ECO);
           }
-          else if (mode_str == "Prog A Chauffage") {
+          else if (value == 3) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_HEATING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_HEAT);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_AWAY);
           }
-          else if (mode_str == "Prog B Chauffage") {
+          else if (value == 4) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_HEATING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_HEAT);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_HOME);
           }
-          else if (mode_str == "Confort Clim") {
+          else if (value == 5) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_COOLING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_COOL);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_COMFORT);
           }
-          else if (mode_str == "Boost Clim") {
+          else if (value == 6) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_COOLING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_COOL);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_BOOST);
           }
-          else if (mode_str == "Prog C Clim") {
+          else if (value == 7) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_COOLING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_COOL);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_AWAY);
           }
-          else if (mode_str == "Prog D Clim") {
+          else if (value == 8) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_COOLING;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_COOL);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_HOME);
           }
-          else if (mode_str == "Ventilation") {
+          else if (value == 9) {
             for (int i = 0; i < thermostats.size(); i++) {
               thermostats[i]->action = climate::CLIMATE_ACTION_OFF;
               thermostats[i]->set_mode(climate::CLIMATE_MODE_OFF);
             }
             thermostats[0]->set_preset(climate::CLIMATE_PRESET_NONE);
           }
-          id(mode_air).publish_state(mode_str);
           for (int i = 0; i < thermostats.size(); i++) {
             thermostats[i]->publish_state();
           }
-          ESP_LOGD("Mode air", "Publish state %s", mode_str.c_str());
   - id: auto_stop_test
     mode: restart
     then:
@@ -239,7 +247,7 @@ script:
               return 
                 (int) id(canal_k1a).state  &&
                 id(etat_circuit_frigo).state == "Coil AIR" &&
-                (((int) id(id_test_actif).state == 4) || ((int) id(id_test_actif).state == 5));
+                (((std::string) id(mode_test).current_option() == "Chauffage") || ((std::string) id(mode_test).current_option() == "Clim"));
           then: 
             - wait_until:
                 condition:
@@ -465,9 +473,9 @@ script:
 
 globals:
   - id: last_test_index
-    type: int
+    type: std::string
     restore_value: no
-    initial_value: '-1'
+    initial_value: ""
 
 time:
   - platform: homeassistant
@@ -504,32 +512,6 @@ datetime:
     optimistic: true
 
 binary_sensor:
-  - platform: template
-    id: status_vacances
-    name: "Status vacances"
-    icon: mdi:beach
-    device_class: light
-    lambda: |-
-      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
-      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
-      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
-      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
-        return false;
-      }
-      return true;
-  - platform: template
-    id: status_hors_gel
-    name: "Status hors-gel"
-    icon: mdi:snowflake
-    device_class: light
-    lambda: |-
-      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
-      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
-      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
-      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
-        return false;
-      }
-      return true;
   # Registre 131
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
@@ -595,6 +577,32 @@ binary_sensor:
     name: Canal ${K9}
     internal: ${nombre_thermostats | int < 9}
     bitmask: 0x200
+  - platform: template
+    id: status_vacances
+    name: "Status vacances"
+    icon: mdi:beach
+    device_class: light
+    lambda: |-
+      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
+      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin == 0 || t_fin <= t_deb || t_now <= t_deb || t_fin <= t_now) {
+        return false;
+      }
+      return true;
+  - platform: template
+    id: status_hors_gel
+    name: "Status hors-gel"
+    icon: mdi:snowflake
+    device_class: light
+    lambda: |-
+      uint32_t t_deb = (uint32_t) strtol(id(registre_31008_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_fin = (uint32_t) strtol(id(registre_31010_telecommande).state.c_str(), NULL, 16);
+      uint32_t t_now = (uint32_t) strtol(id(registre_16_telecommande).state.c_str(), NULL, 16);
+      if (std::isnan(t_deb) || std::isnan(t_fin) || std::isnan(t_now) || t_deb == 0 || t_fin != 0 || t_now <= t_deb) {
+        return false;
+      }
+      return true;
 
 text_sensor:
   # Registre 1
@@ -748,13 +756,6 @@ text_sensor:
     address: 31008
     response_size: 4
     raw_encode: HEXBYTES
-    on_value:
-      then:
-        - lambda: |-
-            if ((uint32_t) strtol(x.c_str(), NULL, 16) == 0) {
-              id(vacances).turn_off();
-              id(hors_gel).turn_off();
-            }
   # Registre 31010 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande_lent
@@ -771,44 +772,48 @@ text_sensor:
             if ((uint32_t) strtol(x.c_str(), NULL, 16) == 0) {
               id(vacances).turn_off();
             }
-  # Registre 31200
+  # Registre 31200 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: proga
-    name: "Progr. A dataset"
+    # name: "Progr. A dataset"
+    internal: true
     icon: mdi:data-matrix
     entity_category: diagnostic
     register_type: holding
     address: 31200
     response_size: 28
     raw_encode: HEXBYTES
-  # Registre 31214
+  # Registre 31214 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progb
-    name: "Progr. B dataset"
+    # name: "Progr. B dataset"
+    internal: true
     icon: mdi:data-matrix
     entity_category: diagnostic
     register_type: holding
     address: 31214
     response_size: 28
     raw_encode: HEXBYTES
-  # Registre 31228
+  # Registre 31228 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progc
-    name: "Progr. C dataset"
+    # name: "Progr. C dataset"
+    internal: true
     icon: mdi:data-matrix
     entity_category: diagnostic
     register_type: holding
     address: 31228
     response_size: 28
     raw_encode: HEXBYTES
-  # Registre 31242
+  # Registre 31242 interne
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: progd
-    name: "Progr. D dataset"
+    # name: "Progr. D dataset"
+    internal: true
     icon: mdi:data-matrix
     entity_category: diagnostic
     register_type: holding
@@ -1209,26 +1214,6 @@ sensor:
     device_class: duration
     # state_class: total_increasing  # Si c'est un compteur cumulatif
     unit_of_measurement: "s"
-  # Registre 21000
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: id_test_actif
-    name: "ID du test actif"
-    icon: mdi:test-tube
-    entity_category: diagnostic
-    address: 21000
-    register_type: holding
-    value_type: U_WORD
-  # Registre 21001
-  - platform: modbus_controller
-    modbus_controller_id: modbus_telecommande
-    id: status_test_actif
-    name: "Status du test actif"
-    icon: mdi:test-tube
-    entity_category: diagnostic
-    address: 21001
-    register_type: holding
-    value_type: U_WORD
   # Registre 21668
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande_lent
@@ -1414,6 +1399,7 @@ number:
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: registre_9_telecommande
+    # name: "Registre 9 interne"
     internal: true
     register_type: holding
     address: 9
@@ -1444,7 +1430,7 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x;  // valeur acceptée
-    # Registre 152
+  # Registre 152
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: vitesse_air_cible
@@ -1460,7 +1446,17 @@ number:
     min_value: 0
     max_value: 5
     multiply: 10
-    # Registre 21011
+  # Registre 21001
+  - platform: modbus_controller
+    modbus_controller_id: modbus_telecommande
+    id: registre_21001
+    # name: "Registre 21001"
+    internal: true
+    register_type: holding
+    address: 21001
+    value_type: U_WORD
+    use_write_multiple: true
+  # Registre 21011
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_ventilateur_ui_test
@@ -1483,7 +1479,7 @@ number:
         return 0;   // renvoit une valeur valide
       }
       return x*10;  // valeur acceptée
-    # Registre 21013
+  # Registre 21013
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande
     id: consigne_compresseur_test
@@ -1530,21 +1526,26 @@ select:
     set_action:
       lambda: |-
         uint16_t new_air_mode;
-        if (x == "Off") new_air_mode = 0;
-        else if (x == "Confort Chauffage") new_air_mode = 1;
-        else if (x == "Eco Chauffage") new_air_mode = 2;
-        else if (x == "Prog A Chauffage") new_air_mode = 3;
-        else if (x == "Prog B Chauffage") new_air_mode = 4;
-        else if (x == "Confort Clim") new_air_mode = 5;
-        else if (x == "Boost Clim") new_air_mode = 6;
-        else if (x == "Prog C Clim") new_air_mode = 7;
-        else if (x == "Prog D Clim") new_air_mode = 8;
-        else if (x == "Ventilation") new_air_mode = 9;
+        if (x == "Off") { new_air_mode = 0; }
+        else if (x == "Confort Chauffage") { new_air_mode = 1; }
+        else if (x == "Eco Chauffage") { new_air_mode = 2; }
+        else if (x == "Prog A Chauffage") { new_air_mode = 3; }
+        else if (x == "Prog B Chauffage") { new_air_mode = 4; }
+        else if (x == "Confort Clim") { new_air_mode = 5; }
+        else if (x == "Boost Clim") { new_air_mode = 6; }
+        else if (x == "Prog C Clim") { new_air_mode = 7; }
+        else if (x == "Prog D Clim") { new_air_mode = 8; }
+        else if (x == "Ventilation") { new_air_mode = 9; }
         else { return; } // Arrêt si valeur non reconnue
-        ESP_LOGD("Mode Air télécommande", "Mode choisi: %d", new_air_mode);
-        // Utilisation du service Modbus pour écrire un registre
+        ESP_LOGD("Mode air", "Mode choisi: %d", new_air_mode);
+        // 1. Récupérer la valeur 16-bit actuelle et isoler le Mode ECS (MSB)
+        uint16_t current_reg = (uint16_t)id(registre_9_telecommande).state;
+        uint16_t ecs_mode_msb = current_reg & 0xFF00;
+        // 2. Assemblage : [ECS (MSB)] | [Nouveau Mode AIR (LSB)]
+        uint16_t new_value = ecs_mode_msb | new_air_mode;
+        // 3. Écrire la nouvelle valeur complète dans le registre 9
         auto call = id(registre_9_telecommande).make_call();
-        call.set_value(new_air_mode);
+        call.set_value(new_value);
         call.perform();
         //Mise à jour de la valeur du select
         id(update_mode_air).execute();
@@ -1555,7 +1556,7 @@ select:
     name: "Mode test"
     icon: mdi:tools
     address: 21000
-    value_type: U_DWORD
+    value_type: U_WORD
     use_write_multiple: true
     optimistic: true
     optionsmap:
@@ -1567,43 +1568,61 @@ select:
       "Tirage au vide": 2
       "Pump Down": 3
       "Aéraulique": 11
-    write_lambda: |-
-      // value = numéro du test choisi (optionsmap)
-      uint16_t id_test_actif = (uint16_t) value;
-      // Registre 21000 = ID du test
-      payload.push_back(id_test_actif);
-      // Registre 21001 = 0 si test != 0, sinon 32753 pour arrêter
-      if (id_test_actif == 0) {
-        payload.push_back(32753);
-      } else {
-        payload.push_back(0);
-      }
-      // Retourne n'importe quelle valeur (payload est prioritaire)
-      return 0;
     on_value:
       then:
-        - if:
-            condition:
-              lambda: |-
-                if (i == id(last_test_index)) {
-                  return false;               // pas de changement => on ne fait rien
+        - lambda: |-
+            // Vérifie si le test choisi est différent du dernier test exécuté, arrête le timer, met à jour le dernier test choisi, relance le timer si nécessaire et exécute la consigne pour Chauffage ou Clim
+            if (x != id(last_test_index)) {
+              // 1. Arrêter le timer automatique de test
+              id(auto_stop_test).stop();
+              // 2. Traiter la sortie du mode aéraulique/ventilation
+              if (id(last_test_index) == "Aéraulique") {
+                auto thermostats = std::vector{id(thermostat_global), id(thermostat_k1a), id(thermostat_k1b), id(thermostat_k2), id(thermostat_k3), id(thermostat_k4), id(thermostat_k5), id(thermostat_k6), id(thermostat_k7), id(thermostat_k8), id(thermostat_k9)};
+                thermostats.resize(${nombre_thermostats} + 2);
+                for (int i = 0; i < thermostats.size(); i++) {
+                  thermostats[i]->make_call();
                 }
-                id(last_test_index) = i;
-                return true;                  // vrai changement => on continue
-            then:
-              # Stoppe tout timer existant
-              - script.stop: auto_stop_test
-              # Si l'option choisie n'est PAS "Aucun", on relance le timer
-              - if:
-                  condition:
-                    lambda: 'return strcmp(id(mode_test).current_option().c_str(), "Aucun") != 0;'
-                  then:
-                    - script.execute: auto_stop_test
-                    - if:
-                        condition:
-                          lambda: 'return (strcmp(x.c_str(), "Chauffage") == 0) || (strcmp(x.c_str(), "Clim") == 0);'
-                        then:
-                          - script.execute: consigne_test
+                for (int i = 0; i < thermostats.size(); i++) {
+                  thermostats[i]->action = climate::CLIMATE_ACTION_OFF;
+                  thermostats[i]->set_mode(climate::CLIMATE_MODE_OFF);
+                }
+                thermostats[0]->set_preset(climate::CLIMATE_PRESET_NONE);
+                for (int i = 0; i < thermostats.size(); i++) {
+                  thermostats[i]->publish_state();
+                }
+              }
+              // 3. Traiter l'activation d'un test
+              if (x != "Aucun") {
+                id(auto_stop_test).execute();
+                // Exécuter la consigne pour Chauffage ou Clim si nécessaire
+                if (x == "Chauffage" || x == "Clim") {
+                  id(consigne_test).execute();
+                }
+                // Traiter l'activation du mode aéraulique/ventilation
+                else if (x == "Aéraulique") {
+                  auto thermostats = std::vector{id(thermostat_global), id(thermostat_k1a), id(thermostat_k1b), id(thermostat_k2), id(thermostat_k3), id(thermostat_k4), id(thermostat_k5), id(thermostat_k6), id(thermostat_k7), id(thermostat_k8), id(thermostat_k9)};
+                  thermostats.resize(${nombre_thermostats} + 2);
+                  for (int i = 0; i < thermostats.size(); i++) {
+                    thermostats[i]->make_call();
+                  }
+                  for (int i = 0; i < thermostats.size(); i++) {
+                    thermostats[i]->action = climate::CLIMATE_ACTION_FAN;
+                    thermostats[i]->set_mode(climate::CLIMATE_MODE_FAN_ONLY);
+                  }
+                  thermostats[0]->set_preset(climate::CLIMATE_PRESET_COMFORT);
+                  for (int i = 0; i < thermostats.size(); i++) {
+                    thermostats[i]->publish_state();
+                  }
+                }
+              }
+              // 4. Traiter la désactivation des tests en général
+              else if (x == "Aucun") {
+                auto call = id(registre_21001).make_call();
+                call.set_value(32753);
+                call.perform();
+              }
+              id(last_test_index) = x;
+            }
   # Registre 31012
   - platform: modbus_controller
     modbus_controller_id: modbus_telecommande_lent

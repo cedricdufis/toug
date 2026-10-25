@@ -30,6 +30,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k1a).make_call();
@@ -83,6 +87,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k1b).make_call();
@@ -134,6 +142,10 @@ climate:
             else if (x == climate::CLIMATE_MODE_COOL) {
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
             }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
@@ -187,6 +199,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k3).make_call();
@@ -238,6 +254,10 @@ climate:
             else if (x == climate::CLIMATE_MODE_COOL) {
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
             }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
@@ -291,6 +311,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k5).make_call();
@@ -342,6 +366,10 @@ climate:
             else if (x == climate::CLIMATE_MODE_COOL) {
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
             }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
@@ -395,6 +423,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k7).make_call();
@@ -447,6 +479,10 @@ climate:
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
+            }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
                 auto call_temp = id(consigne_k8).make_call();
@@ -498,6 +534,10 @@ climate:
             else if (x == climate::CLIMATE_MODE_COOL) {
               call_modeair.set_option(std::string("Confort Clim"));
               call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (x == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
             }
             else if (x == climate::CLIMATE_MODE_OFF) {
               if (id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
@@ -588,6 +628,10 @@ climate:
               call_modeair.set_option(std::string("Eco Chauffage"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_PRESET_ECO && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
+              call_modeair.set_option(std::string("Confort Clim"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
             else if (x == climate::CLIMATE_PRESET_AWAY && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
               call_modeair.set_option(std::string("Prog A Chauffage"));
               call_modetest.set_option(std::string("Aucun"));
@@ -604,9 +648,17 @@ climate:
               call_modeair.set_option(std::string("Prog D Clim"));
               call_modetest.set_option(std::string("Aucun"));
             }
+            else if (x == climate::CLIMATE_PRESET_BOOST && id(thermostat_global).mode == climate::CLIMATE_MODE_HEAT) {
+              call_modeair.set_option(std::string("Confort Chauffage"));
+              call_modetest.set_option(std::string("Aucun"));
+            }
             else if (x == climate::CLIMATE_PRESET_BOOST && id(thermostat_global).mode == climate::CLIMATE_MODE_COOL) {
               call_modeair.set_option(std::string("Boost Clim"));
               call_modetest.set_option(std::string("Aucun"));
+            }
+            else if (id(thermostat_global).mode == climate::CLIMATE_MODE_FAN_ONLY) {
+              call_modeair.set_option(std::string("Off"));
+              call_modetest.set_option(std::string("Aéraulique"));
             }
             else if (x == climate::CLIMATE_PRESET_NONE) {
               call_modeair.set_option(std::string("Off"));
